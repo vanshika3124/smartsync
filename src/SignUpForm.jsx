@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+// 1. 'useNavigate' IMPORT KAREIN
+import { Link, useNavigate } from 'react-router-dom'; 
+import { useAuth } from './context/AuthContext';
 
 function SignUpForm() {
+  const { login } = useAuth(); 
+  // 2. 'navigate' VARIABLE BANAYEIN
+  const navigate = useNavigate(); 
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
 
@@ -32,14 +37,20 @@ function SignUpForm() {
     }
     setMessage('Creating account...');
     try {
-      // === YEH HAI FINAL URL CHANGE ===
-      const response = await axios.post('/api/auth/register', {
+      const response = await axios.post('https://testing-p3dv.onrender.com/api/auth/teacher/register', {
         name: formData.fullName,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        // 3. 'role' WAPIS ADD KAREIN (Yahi 500 error de raha tha)
+        role: "teacher" 
       });
       setMessage('Success! Account created successfully.');
       console.log(response.data); 
+      
+      // 4. LOGIN KAREIN AUR DASHBOARD PAR BHEJEIN
+      login();
+      navigate('/dashboard');
+
     } catch (error) {
       console.error('Registration failed:', error);
       setMessage(error.response?.data?.message || 'Error: Could not create account.');
@@ -55,7 +66,7 @@ function SignUpForm() {
         </div>
 
         <div className="w-full md:w-1/2 p-6 flex flex-col justify-center md:pl-16">
-          <span className="text-gray-600 text-sm font-medium mb-1">Full Name</span>
+            
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Create an account</h2>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -69,7 +80,10 @@ function SignUpForm() {
 
             <p className="text-center text-sm text-gray-600">
               Already have an account?{' '}
-              <Link to="/login" className="font-medium text-blue-600 hover:underline">
+              <Link 
+                to="/login"
+                className="font-medium text-blue-600 hover:underline"
+              >
                 Login
               </Link>
             </p>

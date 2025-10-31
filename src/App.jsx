@@ -1,25 +1,29 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Navbar from './Navbar';
 import SignUpForm from './SignUpForm';
-import LoginForm from './LoginForm'; // 1. LoginForm ko import karein
+import LoginForm from './LoginForm';
+import HomePage from './HomePage';
+import TeachersDashboard from './TeachersDashboard'; // 1. Import karein
+
+import { Routes, Route } from 'react-router-dom';
 
 function App() {
-  // 2. Ek state banayein jo batayega kaunsa form dikhana hai
-  // 'false' = SignUp form (default), 'true' = Login form
-  const [showLogin, setShowLogin] = useState(false);
-
   return (
-    <div className="bg-blue-100 min-h-screen flex flex-col">
+    <div className="bg-blue-50 min-h-screen flex flex-col">
       <Navbar />
       
-      {/* 3. Yahan logic lagayein */}
-      {showLogin ? (
-        // Agar 'showLogin' true hai, toh Login form dikhayein
-        <LoginForm showSignUp={setShowLogin} />
-      ) : (
-        // Agar 'showLogin' false hai, toh Sign Up form dikhayein
-        <SignUpForm showLogin={setShowLogin} />
-      )}
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/register" element={<SignUpForm />} />
+        <Route path="/login" element={<LoginForm />} />
+        
+        {/* 2. Yahan 'div' ko 'TeachersDashboard' se badal dein */}
+        <Route path="/dashboard" element={<TeachersDashboard />} /> 
+        
+        <Route path="/classroom" element={<div>Classroom Page</div>} />
+        <Route path="/quiz" element={<div>Quiz Page</div>} />
+        <Route path="/faqs" element={<div>FAQs Page</div>} />
+      </Routes>
     </div>
   );
 }
