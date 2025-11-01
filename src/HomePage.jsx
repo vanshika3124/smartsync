@@ -23,50 +23,168 @@ import {
 
 // --- Functional Review Section ---
 const reviewsData = [
-  { name: 'Mr. A. Kumar', text: 'This platform changed my teaching. The analytics are insightful and easy to use.', img: 'https://api.uifaces.co/faces/twitter/kulkain/128.jpg' },
-  { name: 'Mr. Riaz Khan', text: 'SmartSync is brilliant. Managing quizzes and notes in one place is a lifesaver.', img: 'https://api.uifaces.co/faces/twitter/holdenweb/128.jpg' },
-  { name: 'Ms. Priya Shah', text: 'My students are more engaged, and I love the seamless classroom integration.', img: 'https://api.uifaces.co/faces/twitter/adellecharles/128.jpg' },
-  { name: 'Mr. S. Chen', text: 'The real-time quiz feature is fantastic for immediate feedback.', img: 'https://api.uifaces.co/faces/twitter/IS_Cem/128.jpg' },
+  { 
+    name: 'Ms. A. Kumar', 
+    title: 'Mathematics Teacher',
+    text: "SmartSync has truly revolutionised the way I run my classroom. I can roll out a quiz in seconds, track student responses live, and instantly recognise who needs help. The analytics dashboard is a god-send — no more guessing which topic needs revisiting.", 
+    img: 'https://api.uifaces.co/faces/twitter/kulkain/128.jpg', // Placeholder image
+    time: "3 months ago",
+    stars: 4 
+  },
+  { 
+    name: 'Mr. Sunil Rao', 
+    title: 'Senior Secondary School',
+    text: "As a senior educator, I value tools that just work. SmartSync impressed me with how intuitive it was to set up, how quickly my students picked it up, and how it seamlessly fits in both online and in-class use. Highly recommended!", 
+    img: 'https://api.uifaces.co/faces/twitter/holdenweb/128.jpg', // Placeholder image
+    time: "2 weeks ago",
+    stars: 5 
+  },
+  { 
+    name: 'Ms. Priya Shah', 
+    title: 'English Department',
+    text: "My students actually look forward to using SmartSync now — the quizzes are engaging, the feedback is instantaneous, and I love how I can upload my own notes and course material in one place. It’s made teaching more efficient and interactive.", 
+    img: 'https://api.uifaces.co/faces/twitter/adellecharles/128.jpg', // Placeholder image
+    time: "1 month ago",
+    stars: 5 
+  },
+  { 
+    name: 'Mr. S. Chen', 
+    title: 'Physics Department',
+    text: 'The real-time quiz feature is fantastic for immediate feedback. Lifesaver.', 
+    img: 'https://api.uifaces.co/faces/twitter/IS_Cem/128.jpg', // Placeholder image
+    time: "2 months ago",
+    stars: 4
+  },
 ];
+
+// --- 2. HELPER COMPONENTS (Stars aur Card ke liye) ---
+
+// Stars ke liye (Text-based emoji)
+const Stars = ({ count = 5 }) => {
+  return (
+    <div className="flex text-yellow-400 text-xl">
+      {Array(count).fill(0).map((_, i) => (
+        <span key={i}>★</span>
+      ))}
+      {Array(5 - count).fill(0).map((_, i) => (
+        <span key={i} className="text-gray-300">★</span>
+      ))}
+    </div>
+  );
+};
+
+// Ek single review card ka design
+const ReviewCard = ({ name, title, text, img, time, stars, borderColor }) => (
+  // min-w-[350px] taaki card chhota na ho, mx-4 spacing ke liye
+  <div className="bg-white p-6 rounded-2xl shadow-lg min-w-[350px] max-w-sm mx-4"> 
+    <div className="flex items-center mb-4">
+      <img 
+        src={img} 
+        alt={name} 
+        // Border color ko dynamic rakha hai
+        className={`w-16 h-16 rounded-full border-4 ${borderColor}`}
+      />
+      <div className="ml-4">
+        <h3 className="font-bold text-lg text-gray-900">{name}</h3>
+        <p className="text-sm text-gray-500">{title}</p>
+      </div>
+    </div>
+    <Stars count={stars} />
+    <p className="text-gray-600 my-4 text-sm leading-relaxed">{text}</p>
+    <p className="text-right text-xs text-gray-400">{time}</p>
+  </div>
+);
+
+
+// --- 3. MAIN REVIEWS SECTION (Naya Layout) ---
 
 function ReviewsSection() {
   const [current, setCurrent] = useState(0);
 
   const nextReview = () => {
-    setCurrent(current === reviewsData.length - 1 ? 0 : current + 1);
+    // Logic update kiya taaki last card pe na ruke
+    setCurrent(prev => (prev === reviewsData.length - 1 ? 0 : prev + 1));
   };
   const prevReview = () => {
-    setCurrent(current === 0 ? reviewsData.length - 1 : current - 1);
+    // Logic update kiya taaki first card se peeche wrap ho
+    setCurrent(prev => (prev === 0 ? reviewsData.length - 1 : prev - 1));
   };
+  
+  // Screenshot waale alag-alag border colors
+  const borderColors = ['border-blue-400', 'border-yellow-400', 'border-red-400', 'border-purple-400'];
+  
+  // Calculate card width + margin (350px + 32px (mx-4 * 2))
+  const cardOffset = 350 + 32; 
 
   return (
-    <div className="w-full max-w-5xl mx-auto text-center">
-      <h2 className="text-3xl font-bold mb-8 text-gray-800">Reviews from our members</h2>
-      <div className="relative">
-        <div className="bg-white p-8 rounded-lg shadow-lg max-w-2xl mx-auto">
-          <img src={reviewsData[current].img} alt={reviewsData[current].name} className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-gray-200" />
-          <p className="text-gray-600 mb-4 text-lg">"{reviewsData[current].text}"</p>
-          <h4 className="font-bold text-xl text-gray-900">{reviewsData[current].name}</h4>
+    // Poora section (background color light gray hai screenshot mein)
+    <section className="py-20 px-6 bg-[#EFF6FF]"> 
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16">
+        
+        {/* --- Left Column: Image --- */}
+        <div className="w-full md:w-1/3 hidden md:block">
+          <img 
+            src="/photos/woman.png" // Yeh image aapko public/photos/ mein daalni hogi
+            alt="Teacher pointing to reviews" 
+            className="max-w-xs mx-auto" 
+          />
         </div>
-        <button 
-          onClick={prevReview} 
-          className="absolute left-0 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 shadow-md hover:bg-gray-100 transition-colors"
-          aria-label="Previous review"
-        >
-          <FaChevronLeft />
-        </button>
-        <button 
-          onClick={nextReview} 
-          className="absolute right-0 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 shadow-md hover:bg-gray-100 transition-colors"
-          aria-label="Next review"
-        >
-          <FaChevronRight />
-        </button>
+
+        {/* --- Right Column: Title, Carousel, Buttons --- */}
+        <div className="w-full md:w-2/3">
+          <h2 className="text-4xl font-bold mb-12 text-gray-800 text-center">
+            Reviews from our members
+          </h2>
+
+          {/* --- Carousel Container --- */}
+          <div className="relative">
+            {/* Wrapper jo extra cards ko hide karega */}
+            <div className="overflow-hidden">
+              
+              {/* Sliding container jo transform hoga */}
+              <div 
+                className="flex transition-transform duration-500 ease-in-out"
+                // Main logic: 'current' state ke hisaab se container ko slide karo
+                style={{ transform: `translateX(-${current * cardOffset}px)` }}
+              >
+                {/* Saare reviews ko map karke cards banao */}
+                {reviewsData.map((review, index) => (
+                  <ReviewCard 
+                    key={index}
+                    {...review}
+                    borderColor={borderColors[index % borderColors.length]}
+                  />
+                ))}
+              </div>
+            </div>
+            
+            {/* --- Navigation Buttons --- */}
+            <div className="flex justify-center mt-8 gap-4">
+              <button 
+                onClick={prevReview} 
+                className="bg-white rounded-full p-4 shadow-md hover:bg-gray-100 transition-colors"
+                aria-label="Previous review"
+              >
+                {/* PNG icon use kar rahe hain */}
+                <img src="/icons/chevron-left.png" alt="Previous" className="w-6 h-6" />
+              </button>
+              <button 
+                onClick={nextReview} 
+                className="bg-white rounded-full p-4 shadow-md hover:bg-gray-100 transition-colors"
+                aria-label="Next review"
+              >
+                {/* PNG icon use kar rahe hain */}
+                <img src="/icons/chevron-right.png" alt="Next" className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 
+// export default ReviewsSection; // Agar alag file mein hai toh isse uncomment karein
 // --- Functional FAQ Section ---
 const faqsData = [
   { q: "What is SmartSync and how does it help in classrooms?", a: "SmartSync is an all-in-one platform designed for teachers. It allows you to create quizzes, manage classrooms, track student performance with detailed analytics, and provide notes, all in one place." },
@@ -113,7 +231,7 @@ function HomePage() {
     <div className="w-full bg-blue-50">
       
       {/* --- 1. Hero Section --- */}
-      <section className="bg-white py-20 px-6">
+      <section className="bg-blue-50 py-20 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 text-left pr-8">
             <h1 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
