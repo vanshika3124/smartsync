@@ -1,33 +1,163 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-// Icons
-import { 
-  FaChalkboardTeacher, 
-  FaChartBar, // <-- 1. YAHAN FIX KIYA (FaAnalytics ki jagah)
-  FaUsers, 
-  FaArrowRight, 
-  FaChevronLeft, 
-  FaChevronRight, 
-  FaChevronDown, 
+// --- YAHAN SARE ICONS IMPORT KIYE HAIN ---
+import {
+  FaChevronLeft,
+  FaChevronRight,
   FaChevronUp,
-  FaBookReader, 
-  FaBrain, 
-  FaNetworkWired, 
-  FaVideo,
-  FaPhoneAlt, 
-  FaEnvelope, 
-  FaMapMarkerAlt, 
-  FaCheckCircle
+  FaChevronDown,
+  FaArrowRight,
+  FaLinkedinIn,
+  FaTwitter,
+  FaFacebookF,
+  FaYoutube,
+  FaInstagram
 } from 'react-icons/fa';
 
-// --- Functional Review Section ---
+// --- 2. Hero Section Component ---
+// (No change, uses photo images)
+const HeroSection = () => {
+  const linkTo = "/login"; 
+
+  return (
+    <section className="bg-[#F0F5FF] py-20 px-6 md:px-12">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid md:grid-cols-2 items-center gap-12">
+          <div className="text-left">
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+              Smart Teaching <br /> Smarter Learning
+            </h1>
+            <p className="text-2xl md:text-3xl text-gray-600 mb-10">
+              Making Learning Smarter, Faster, and More Connected Than Ever Before
+            </p>
+            <Link 
+              to={linkTo}
+              className="bg-teal-500 text-white px-10 py-4 rounded-full font-semibold text-lg hover:bg-teal-600 transition-colors shadow-lg"
+            >
+              Go to classroom
+            </Link>
+          </div>
+          <div className="flex justify-center">
+            <img 
+              src="/photos/hero-image.png" 
+              alt="Hero Illustration" 
+              className="max-w-lg w-full" 
+            />
+          </div>
+        </div>
+        <div className="mt-24 grid md:grid-cols-3 gap-8">
+          <div className="bg-white p-8 rounded-2xl shadow-lg text-left transition-transform hover:scale-105 border border-gray-100">
+            <img src="/photos/hero-1.png" alt="Real time quizzes" className="w-16 h-16 mb-5" />
+            <h3 className="font-bold text-xl text-gray-900 mb-3">Real time quizzes</h3>
+            <p className="text-gray-600 text-sm">
+              Live quiz sessions with instant feedback and timer-based questions.
+            </p>
+          </div>
+          <div className="bg-white p-8 rounded-2xl shadow-lg text-left transition-transform hover:scale-105 border border-gray-100">
+            <img src="/photos/hero-2.png" alt="ML Analytics" className="w-16 h-16 mb-5" />
+            <h3 className="font-bold text-xl text-gray-900 mb-3">ML Analytics</h3>
+            <p className="text-gray-600 text-sm">
+              Insights into student performance and learning patterns.
+            </p>
+          </div>
+          <div className="bg-white p-8 rounded-2xl shadow-lg text-left transition-transform hover:scale-105 border border-gray-100">
+            <img src="/photos/hero-3.png" alt="Easy Management" className="w-16 h-16 mb-5" />
+            <h3 className="font-bold text-xl text-gray-900 mb-3">Easy Management</h3>
+            <p className="text-gray-600 text-sm">
+              Simple quiz creation and student participation.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// --- 3. Start Teaching Section Component ---
+// (No change, uses photo images)
+const StartTeachingSection = () => {
+  const linkTo = "/login"; 
+
+  return (
+    <section className="bg-white py-20 px-6 md:px-12">
+      <div className="max-w-4xl mx-auto text-center">
+        <h2 className="text-4xl font-bold text-gray-900 mb-2">Start <span className="text-blue-600">Teaching</span></h2>
+        <div className="grid md:grid-cols-3 gap-8 mt-12">
+          <Link to={linkTo} className="block bg-[#E6EAFE] p-8 rounded-2xl shadow-md hover:shadow-lg transition-shadow text-[#334D99]">
+            <img src="/photos/start-quiz.png" alt="Create a quiz" className="w-14 h-14 mx-auto mb-4" />
+            <h3 className="font-semibold text-xl">create a quiz</h3>
+          </Link>
+          <Link to={linkTo} className="block bg-[#E5F8EE] p-8 rounded-2xl shadow-md hover:shadow-lg transition-shadow text-[#00664F]">
+            <img src="/photos/start-classroom.png" alt="Go to classroom" className="w-14 h-14 mx-auto mb-4" />
+            <h3 className="font-semibold text-xl">Go to classroom</h3>
+          </Link>
+          <Link to={linkTo} className="block bg-[#FFF0E7] p-8 rounded-2xl shadow-md hover:shadow-lg transition-shadow text-[#994A1A]">
+            <img src="/photos/start-track.png" alt="Track progress" className="w-14 h-14 mx-auto mb-4" />
+            <h3 className="font-semibold text-xl">Track progress</h3>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// --- 4. How to Teach Section Component ---
+// (No change, uses photo image)
+const HowToTeachSection = () => {
+  const linkTo = "/login"; 
+  const steps = [
+    "Sign in to your SmartSync account",
+    "Create your classroom",
+    "Design your quiz or upload notes",
+    "Start a real-time session",
+    "Track and analyze performance"
+  ];
+
+  return (
+    <section className="py-20 px-6 md:px-12">
+      <div className="max-w-7xl mx-auto bg-[#4A6FFF] text-white p-12 md:p-20 rounded-3xl">
+        <div className="grid md:grid-cols-2 items-center gap-12">
+          <div>
+            <h2 className="text-4xl font-bold mb-10">How to Teach with SmartSync?</h2>
+            <ol className="relative border-l border-dashed border-white/30">
+              {steps.map((step, index) => (
+                <li key={index} className="mb-8 ml-8">
+                  <span className="absolute flex items-center justify-center w-6 h-6 bg-white rounded-full -left-3 ring-4 ring-[#4A6FFF]">
+                    <span className="w-3 h-3 bg-yellow-400 rounded-full"></span>
+                  </span>
+                  <p className="text-xl font-medium">{step}</p>
+                </li>
+              ))}
+            </ol>
+            <Link 
+              to={linkTo}
+              className="mt-8 inline-block bg-teal-500 text-white px-8 py-3 rounded-full font-semibold text-lg hover:bg-teal-600 transition-colors shadow-lg"
+            >
+              Go to classroom
+            </Link>
+          </div>
+          <div className="flex justify-center">
+            <img 
+              src="/photos/teach.png" 
+              alt="How to Teach Illustration" 
+              className="max-w-md w-full" 
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// --- 5. Reviews Section Components ---
+
 const reviewsData = [
   { 
     name: 'Ms. A. Kumar', 
     title: 'Mathematics Teacher',
     text: "SmartSync has truly revolutionised the way I run my classroom. I can roll out a quiz in seconds, track student responses live, and instantly recognise who needs help. The analytics dashboard is a god-send — no more guessing which topic needs revisiting.", 
-    img: 'https://api.uifaces.co/faces/twitter/kulkain/128.jpg', // Placeholder image
+    img: 'https://api.uifaces.co/faces/twitter/kulkain/128.jpg',
     time: "3 months ago",
     stars: 4 
   },
@@ -35,7 +165,7 @@ const reviewsData = [
     name: 'Mr. Sunil Rao', 
     title: 'Senior Secondary School',
     text: "As a senior educator, I value tools that just work. SmartSync impressed me with how intuitive it was to set up, how quickly my students picked it up, and how it seamlessly fits in both online and in-class use. Highly recommended!", 
-    img: 'https://api.uifaces.co/faces/twitter/holdenweb/128.jpg', // Placeholder image
+    img: 'https://api.uifaces.co/faces/twitter/holdenweb/128.jpg',
     time: "2 weeks ago",
     stars: 5 
   },
@@ -43,23 +173,20 @@ const reviewsData = [
     name: 'Ms. Priya Shah', 
     title: 'English Department',
     text: "My students actually look forward to using SmartSync now — the quizzes are engaging, the feedback is instantaneous, and I love how I can upload my own notes and course material in one place. It’s made teaching more efficient and interactive.", 
-    img: 'https://api.uifaces.co/faces/twitter/adellecharles/128.jpg', // Placeholder image
+    img: 'https://api.uifaces.co/faces/twitter/adellecharles/128.jpg',
     time: "1 month ago",
     stars: 5 
   },
   { 
     name: 'Mr. S. Chen', 
     title: 'Physics Department',
-    text: 'The real-time quiz feature is fantastic for immediate feedback. Lifesaver.', 
-    img: 'https://api.uifaces.co/faces/twitter/IS_Cem/128.jpg', // Placeholder image
+    text: 'The real-time quiz feature is fantastic for immediate feedback. Lifesaver for my classroom.', 
+    img: 'https://api.uifaces.co/faces/twitter/IS_Cem/128.jpg',
     time: "2 months ago",
     stars: 4
   },
 ];
 
-// --- 2. HELPER COMPONENTS (Stars aur Card ke liye) ---
-
-// Stars ke liye (Text-based emoji)
 const Stars = ({ count = 5 }) => {
   return (
     <div className="flex text-yellow-400 text-xl">
@@ -73,15 +200,13 @@ const Stars = ({ count = 5 }) => {
   );
 };
 
-// Ek single review card ka design
 const ReviewCard = ({ name, title, text, img, time, stars, borderColor }) => (
-  // min-w-[350px] taaki card chhota na ho, mx-4 spacing ke liye
-  <div className="bg-white p-6 rounded-2xl shadow-lg min-w-[350px] max-w-sm mx-4"> 
+  <div className="bg-white p-6 rounded-2xl shadow-lg min-w-[350px] max-w-sm mx-4 flex-shrink-0"> 
     <div className="flex items-center mb-4">
+      {/* Avatar image hai, isse nahi badla */}
       <img 
         src={img} 
         alt={name} 
-        // Border color ko dynamic rakha hai
         className={`w-16 h-16 rounded-full border-4 ${borderColor}`}
       />
       <div className="ml-4">
@@ -95,59 +220,42 @@ const ReviewCard = ({ name, title, text, img, time, stars, borderColor }) => (
   </div>
 );
 
-
-// --- 3. MAIN REVIEWS SECTION (Naya Layout) ---
-
+// --- REVIEWS SECTION (ICONS UPDATED) ---
 function ReviewsSection() {
   const [current, setCurrent] = useState(0);
+  const cardOffset = 350 + 32; 
 
   const nextReview = () => {
-    // Logic update kiya taaki last card pe na ruke
     setCurrent(prev => (prev === reviewsData.length - 1 ? 0 : prev + 1));
   };
   const prevReview = () => {
-    // Logic update kiya taaki first card se peeche wrap ho
     setCurrent(prev => (prev === 0 ? reviewsData.length - 1 : prev - 1));
   };
   
-  // Screenshot waale alag-alag border colors
   const borderColors = ['border-blue-400', 'border-yellow-400', 'border-red-400', 'border-purple-400'];
-  
-  // Calculate card width + margin (350px + 32px (mx-4 * 2))
-  const cardOffset = 350 + 32; 
 
   return (
-    // Poora section (background color light gray hai screenshot mein)
-    <section className="py-20 px-6 bg-[#EFF6FF]"> 
+    <section className="py-20 px-6 bg-[#F0F5FF]"> 
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16">
         
-        {/* --- Left Column: Image --- */}
         <div className="w-full md:w-1/3 hidden md:block">
           <img 
-            src="/photos/woman.png" // Yeh image aapko public/photos/ mein daalni hogi
+            src="/photos/woman.png" 
             alt="Teacher pointing to reviews" 
             className="max-w-xs mx-auto" 
           />
         </div>
 
-        {/* --- Right Column: Title, Carousel, Buttons --- */}
         <div className="w-full md:w-2/3">
-          <h2 className="text-4xl font-bold mb-12 text-gray-800 text-center">
+          <h2 className="text-4xl font-bold mb-12 text-gray-800 text-center md:text-left">
             Reviews from our members
           </h2>
-
-          {/* --- Carousel Container --- */}
           <div className="relative">
-            {/* Wrapper jo extra cards ko hide karega */}
             <div className="overflow-hidden">
-              
-              {/* Sliding container jo transform hoga */}
               <div 
                 className="flex transition-transform duration-500 ease-in-out"
-                // Main logic: 'current' state ke hisaab se container ko slide karo
                 style={{ transform: `translateX(-${current * cardOffset}px)` }}
               >
-                {/* Saare reviews ko map karke cards banao */}
                 {reviewsData.map((review, index) => (
                   <ReviewCard 
                     key={index}
@@ -158,23 +266,21 @@ function ReviewsSection() {
               </div>
             </div>
             
-            {/* --- Navigation Buttons --- */}
             <div className="flex justify-center mt-8 gap-4">
+              {/* --- YAHAN ICONS USE KIYE --- */}
               <button 
                 onClick={prevReview} 
                 className="bg-white rounded-full p-4 shadow-md hover:bg-gray-100 transition-colors"
                 aria-label="Previous review"
               >
-                {/* PNG icon use kar rahe hain */}
-                <img src="/icons/chevron-left.png" alt="Previous" className="w-6 h-6" />
+                <FaChevronLeft className="w-6 h-6 text-gray-700" />
               </button>
               <button 
                 onClick={nextReview} 
                 className="bg-white rounded-full p-4 shadow-md hover:bg-gray-100 transition-colors"
                 aria-label="Next review"
               >
-                {/* PNG icon use kar rahe hain */}
-                <img src="/icons/chevron-right.png" alt="Next" className="w-6 h-6" />
+                <FaChevronRight className="w-6 h-6 text-gray-700" />
               </button>
             </div>
           </div>
@@ -184,217 +290,217 @@ function ReviewsSection() {
   );
 }
 
-// export default ReviewsSection; // Agar alag file mein hai toh isse uncomment karein
-// --- Functional FAQ Section ---
+// --- 6. FAQ Section Component ---
 const faqsData = [
-  { q: "What is SmartSync and how does it help in classrooms?", a: "SmartSync is an all-in-one platform designed for teachers. It allows you to create quizzes, manage classrooms, track student performance with detailed analytics, and provide notes, all in one place." },
-  { q: "Is SmartSync Free to use for teachers and students?", a: "Yes, SmartSync offers a robust free plan for all teachers and students. We also have premium plans with advanced features for larger schools or institutions." },
-  { q: "How can I create a classroom on SmartSync?", a: "After logging in, navigate to your Dashboard. You'll see a 'Create Classroom' button. Click it, give your classroom a name, and you'll get a unique code to share with your students." },
+  { 
+    q: "What is SmartSync and how does it help in classrooms?", 
+    a: "SmartSync is a smart classroom platform that connects teachers and students in real time. It helps teachers create quizzes, share notes, and analyze student performance — all in one place." 
+  },
+  { 
+    q: "Is SmartSync free to use for teachers and students?", 
+    a: "Yes, SmartSync offers a robust free plan for all teachers and students. We also have premium plans with advanced features for larger schools or institutions." 
+  },
+  { 
+    q: "How can I create a classroom on SmartSync?", 
+    a: "After logging in, navigate to your Dashboard. You'll see a 'Create Classroom' button. Click it, give your classroom a name, and you'll get a unique code to share with your students." 
+  },
 ];
 
+// --- FAQ ITEM (ICONS UPDATED) ---
+const FaqItem = ({ faq, index, openIndex, toggleFAQ }) => {
+  const isOpen = index === openIndex;
+  
+  return (
+    <div className="border-b border-gray-200 last:border-b-0">
+      <button
+        onClick={() => toggleFAQ(index)}
+        className="w-full flex justify-between items-center py-6 text-left"
+      >
+        <span className="font-semibold text-lg text-gray-900">{faq.q}</span>
+        {/* --- YAHAN ICONS USE KIYE --- */}
+        {isOpen ? 
+          <FaChevronUp className="w-5 h-5 text-blue-600" /> : 
+          <FaChevronDown className="w-5 h-5 text-gray-400" />
+        }
+      </button>
+      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100 pb-6' : 'max-h-0 opacity-0'}`}>
+        <p className="text-gray-600 leading-relaxed">{faq.a}</p>
+      </div>
+    </div>
+  );
+};
+
+// --- FAQ SECTION (ICONS UPDATED) ---
 function FaqSection() {
-  const [openIndex, setOpenIndex] = useState(null);
+  const [openIndex, setOpenIndex] = useState(0); 
 
   const toggleFAQ = (index) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
-      <h2 className="text-3xl font-bold mb-8 text-center text-gray-800">FAQs</h2>
-      <div className="space-y-4">
-        {faqsData.map((faq, index) => (
-          <div key={index} className="border-b border-gray-200">
-            <button
-              onClick={() => toggleFAQ(index)}
-              className="w-full flex justify-between items-center py-4 text-left font-semibold text-lg"
-            >
-              <span>{faq.q}</span>
-              {openIndex === index ? <FaChevronUp className="text-blue-600" /> : <FaChevronDown className="text-gray-500" />}
-            </button>
-            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-              <p className="pt-2 pb-4 text-gray-600">{faq.a}</p>
-            </div>
-          </div>
-        ))}
+    <section className="py-20 px-6 bg-[#F0F5FF]">
+      <div className="max-w-4xl mx-auto text-center">
+        <h2 className="text-4xl font-bold text-blue-600 mb-12">FAQs</h2>
+        <div className="bg-white p-8 md:p-12 rounded-2xl shadow-lg text-left">
+          {faqsData.map((faq, index) => (
+            <FaqItem 
+              key={index}
+              faq={faq}
+              index={index}
+              openIndex={openIndex}
+              toggleFAQ={toggleFAQ}
+            />
+          ))}
+        </div>
+       <Link 
+          to="/faqs" 
+          className="mt-12 inline-block bg-teal-500 text-white px-8 py-3 rounded-full font-semibold text-lg hover:bg-teal-600 transition-colors shadow-lg"
+        >
+          See all FAQs
+          {/* --- YAHAN ICON USE KIYA --- */}
+          <FaArrowRight className="inline-block w-4 h-4 ml-2" />
+        </Link>
       </div>
-    </div>
+    </section>
   );
 }
 
+// --- 7. Benefits and Stats Section Component ---
+// (No change, uses photo images)
+const BenefitsAndStatsSection = () => {
+  const benefits = [
+    { title: "Creates engaging environment", icon: "/photos/benefit-1.png" },
+    { title: "Improves knowledge retention", icon: "/photos/benefit-2.png" },
+    { title: "Boosts teaching skills", icon: "/photos/benefit-3.png" },
+    { title: "Makes learning fun", icon: "/photos/benefit-4.png" },
+    { title: "Eases access to information", icon: "/photos/benefit-5.png" },
+    { title: "Suits students with distinct learning needs", icon: "/photos/benefit-6.png" },
+  ];
 
-// --- MAIN HOMEPAGE COMPONENT ---
-function HomePage() {
-  const linkTo = "/login"; 
+  const stats = [
+    { title: "Cities", value: "400+", icon: "/photos/stat-1.png" },
+    { title: "Schools", value: "8500+", icon: "/photos/stat-2.png" },
+    { title: "Teachers", value: "1.2million+", icon: "/photos/stat-3.png" },
+  ];
 
   return (
-    <div className="w-full bg-blue-50">
-      
-      {/* --- 1. Hero Section --- */}
-      <section className="bg-blue-50 py-20 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center">
-          <div className="md:w-1/2 text-left pr-8">
-            <h1 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
-              Smart Teaching <br /> Smarter Learning
-            </h1>
-            <p className="text-lg text-gray-600 mb-8">
-              Deliver learning content smarter, faster, and more connected than ever.
-            </p>
-            <Link 
-              to={linkTo}
-              className="bg-green-500 text-white px-8 py-3 rounded-lg font-semibold text-lg hover:bg-green-600 transition-colors shadow-md"
-            >
-              Create a set
-            </Link>
-          </div>
-          <div className="md:w-1/2 mt-12 md:mt-0 flex justify-center">
-            {/* Make sure 'hero-image.png' is in 'public/photos/' folder */}
-            <img src="/photos/hero-image.png" alt="Hero Illustration" className="rounded-lg max-w-md" />
-          </div>
+    <section className="bg-white py-20 px-6 md:px-12">
+      <div className="max-w-6xl mx-auto text-center">
+        <h2 className="text-4xl font-bold text-gray-900 mb-16">
+          Benefits of Digital Smart Classroom Systems
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-y-12">
+          {benefits.map((item) => (
+            <div key={item.title} className="flex flex-col items-center">
+              <img src={item.icon} alt="" className="w-16 h-16 mb-4" />
+              <p className="font-medium text-blue-900 max-w-[200px]">{item.title}</p>
+            </div>
+          ))}
         </div>
-      </section>
-
-      {/* --- 2. Features Cards Section --- */}
-      <section className="py-20 px-6">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform hover:scale-105">
-            <FaChalkboardTeacher className="text-4xl text-blue-600 mx-auto mb-4" />
-            <h3 className="font-bold text-xl mb-2">Create Quizzes</h3>
-            <p className="text-gray-600">Easily create and share quizzes with your students.</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform hover:scale-105">
-            {/* --- 2. YAHAN BHI FIX KIYA --- */}
-            <FaChartBar className="text-4xl text-blue-600 mx-auto mb-4" />
-            <h3 className="font-bold text-xl mb-2">Detailed Analytics</h3>
-            <p className="text-gray-600">Track student performance with in-depth analytics.</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center transition-transform hover:scale-105">
-            <FaUsers className="text-4xl text-blue-600 mx-auto mb-4" />
-            <h3 className="font-bold text-xl mb-2">Student Management</h3>
-            <p className="text-gray-600">Manage your classes and students all in one place.</p>
-          </div>
+        <div className="grid md:grid-cols-3 gap-8 mt-24 pt-16 border-t border-gray-200">
+          {stats.map((item) => (
+            <div key={item.title} className="flex flex-col items-center">
+              <img src={item.icon} alt="" className="w-16 h-16 mb-4" />
+              <h3 className="text-5xl font-bold text-teal-600 mb-2">{item.value}</h3>
+              <p className="text-2xl text-gray-700">{item.title}</p>
+            </div>
+          ))}
         </div>
-      </section>
+      </div>
+    </section>
+  );
+};
 
-      {/* ... baaki saara code (Start Teaching, How to Teach, Reviews, FAQs, etc.) same hai ... */}
-      
-      {/* --- 3. Start Teaching Section --- */}
-      <section className="py-16 px-6 text-center">
-        <h2 className="text-3xl font-bold mb-8 text-gray-800">Start Teaching</h2>
-        <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-6">
-          <Link to={linkTo} className="block bg-purple-100 p-8 rounded-lg shadow-md hover:shadow-lg transition-shadow hover:bg-purple-200">
-            <h3 className="font-bold text-xl text-purple-800">Create a quiz</h3>
+// --- 8. Footer Component (ICONS UPDATED) ---
+const Footer = () => {
+  const linkTo = "/login"; 
+
+  const quickLinks = [
+    { title: "Teachers dashboard", to: linkTo },
+    { title: "Classroom", to: linkTo },
+    { title: "Create a quiz", to: linkTo },
+    { title: "Faqs", to: linkTo },
+    { title: "Login", to: linkTo },
+    { title: "Terms and Conditions", to: linkTo },
+    { title: "Signup", to: linkTo },
+  ];
+
+  return (
+    <footer className="bg-[#0F174B] text-gray-300 py-16 px-6 md:px-12 rounded-t-3xl">
+      <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-12">
+        
+        <div>
+          <h4 className="font-bold text-white text-xl mb-6">Contact us</h4>
+          <p className="mb-4">Email : <a href="mailto:Smartsync@help.in" className="hover:text-white">Smartsync@help.in</a></p>
+          <p className="mb-6">Call : <a href="tel:703712XXXX" className="hover:text-white">703712XXXX</a></p>
+          <hr className="border-white/20 mb-6" />
+          
+          <h4 className="font-bold text-white text-xl mb-6">Follow us</h4>
+          {/* --- YAHAN ICONS USE KIYE --- */}
+          <div className="flex gap-4 mb-8">
+            <a href="#" className="p-2 bg-white/10 rounded-full hover:bg-white/20">
+              <FaLinkedinIn className="w-5 h-5" />
+            </a>
+            <a href="#" className="p-2 bg-white/10 rounded-full hover:bg-white/20">
+              <FaTwitter className="w-5 h-5" />
+            </a>
+            <a href="#" className="p-2 bg-white/10 rounded-full hover:bg-white/20">
+              <FaFacebookF className="w-5 h-5" />
+            </a>
+            <a href="#" className="p-2 bg-white/10 rounded-full hover:bg-white/20">
+              <FaYoutube className="w-5 h-5" />
+            </a>
+            <a href="#" className="p-2 bg-white/10 rounded-full hover:bg-white/20">
+              <FaInstagram className="w-5 h-5" />
+            </a>
+          </div>
+          <hr className="border-white/20 mb-8" />
+          
+          <Link to="/" className="flex items-center gap-2">
+            {/* Logo image hai, isse nahi badla */}
+            <img src="/icons/logo-white.png" alt="SmartSync Logo" className="w-10 h-10" />
+            <span className="text-2xl font-bold text-white">SmartSync</span>
           </Link>
-          <Link to={linkTo} className="block bg-green-100 p-8 rounded-lg shadow-md hover:shadow-lg transition-shadow hover:bg-green-200">
-            <h3 className="font-bold text-xl text-green-800">Go to classroom</h3>
-          </Link>
-          <Link to={linkTo} className="block bg-orange-100 p-8 rounded-lg shadow-md hover:shadow-lg transition-shadow hover:bg-orange-200">
-            <h3 className="font-bold text-xl text-orange-800">Track progress</h3>
-          </Link>
         </div>
-      </section>
 
-      {/* --- 4. How to Teach Section --- */}
-      <section className="bg-blue-600 text-white py-20 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center">
-          <div className="md:w-1/2 pr-8">
-            <h2 className="text-3xl font-bold mb-6">How to Teach with SmartSync</h2>
-            <ul className="space-y-4 text-lg">
-              <li className="flex items-center gap-3"><FaCheckCircle className="text-green-400" /> Sign in to your SmartSync account</li>
-              <li className="flex items-center gap-3"><FaCheckCircle className="text-green-400" /> Create your classroom</li>
-              <li className="flex items-center gap-3"><FaCheckCircle className="text-green-400" /> Provide your code or upload notes</li>
-              <li className="flex items-center gap-3"><FaCheckCircle className="text-green-400" /> Start a real-time quiz session</li>
-              <li className="flex items-center gap-3"><FaCheckCircle className="text-green-400" /> Track and analyze performance</li>
-            </ul>
-            <Link 
-              to={linkTo}
-              className="mt-8 inline-block bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors"
-            >
-              Go to Dashboard
-            </Link>
-          </div>
-          <div className="md:w-1/2 mt-12 md:mt-0 flex justify-center">
-            {/* Make sure 'how-to-teach.png' is in 'public/photos/' folder */}
-            <img src="/photos/how-to-teach.png" alt="How to Teach" className="rounded-lg max-w-md" />
-          </div>
+        <div>
+          <h4 className="font-bold text-white text-xl mb-6">Quick links</h4>
+          <ul className="space-y-4">
+            {quickLinks.map((link) => (
+              <li key={link.title}>
+                <Link to={link.to} className="hover:text-white">{link.title}</Link>
+              </li>
+            ))}
+          </ul>
         </div>
-      </section>
 
-      {/* --- 5. Reviews Section --- */}
-      <section className="py-20 px-6">
-        <ReviewsSection />
-      </section>
-
-      {/* --- 6. FAQs Section --- */}
-      <section className="pb-20 px-6">
-        <FaqSection />
-      </section>
-
-      {/* --- 7. Benefits Section --- */}
-      <section className="bg-white py-20 px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-12 text-gray-800">Benefits of Digital Smart Classroom Systems</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="flex flex-col items-center"><FaBookReader className="text-5xl text-blue-600 mb-4" /><p className="font-medium">Courses engaging environment</p></div>
-            <div className="flex flex-col items-center"><FaBrain className="text-5xl text-blue-600 mb-4" /><p className="font-medium">Improves knowledge retention</p></div>
-            <div className="flex flex-col items-center"><FaNetworkWired className="text-5xl text-blue-600 mb-4" /><p className="font-medium">Eases access to information</p></div>
-            <div className="flex flex-col items-center"><FaVideo className="text-5xl text-blue-600 mb-4" /><p className="font-medium">Suits modern teaching needs</p></div>
-          </div>
+        <div>
+          <h4 className="font-bold text-white text-xl mb-6">Address</h4>
+          <p className="leading-relaxed">
+            CIN U74999MH2012PTC237035 <br />
+            6th Floor, F-Wing, Lotus Corporate Park, 185/A, <br />
+            Graham Firth Compound, Goregaon (E), Western <br />
+            Express Highway, Mumbai-400063
+          </p>
         </div>
-      </section>
+      </div>
+    </footer>
+  );
+};
 
-      {/* --- 8. Stats Section --- */}
-      <section className="py-20 px-6 text-center">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
-          <div>
-            <h3 className="text-5xl font-bold text-blue-600">600+</h3>
-            <p className="text-xl text-gray-700">Cities</p>
-          </div>
-          <div>
-            <h3 className="text-5xl font-bold text-blue-600">15000+</h3>
-            <p className="text-xl text-gray-700">Schools</p>
-          </div>
-          <div>
-            <h3 className="text-5xl font-bold text-blue-600">1.2Million+</h3>
-            <p className="text-xl text-gray-700">Teachers</p>
-          </div>
-        </div>
-      </section>
 
-      {/* --- 9. Footer Section --- */}
-      <footer className="bg-gray-900 text-gray-400 py-16 px-6">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
-          <div>
-            <h4 className="font-bold text-white text-lg mb-4">Contact Us</h4>
-            <p className="flex items-center gap-2 mb-2"><FaEnvelope /> smartsync@gmail.com</p>
-            <p className="flex items-center gap-2 mb-2"><FaPhoneAlt /> 123-456-7890</p>
-            <p className="flex items-center gap-2"><FaMapMarkerAlt /> 123 Smart St, Ghaziabad, IN</p>
-          </div>
-          <div>
-            <h4 className="font-bold text-white text-lg mb-4">Quick Links</h4>
-            <ul className="space-y-2">
-              <li><Link to="/" className="hover:text-white">Home</Link></li>
-              <li><Link to={linkTo} className="hover:text-white">Dashboard</Link></li>
-              <li><Link to={linkTo} className="hover:text-white">Classroom</Link></li>
-              <li><Link to={linkTo} className="hover:text-white">Quiz</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold text-white text-lg mb-4">Address</h4>
-            <p>SmartSync Solutions Pvt. Ltd.</p>
-            <p>123 Innovation Drive, Tech Park,</p>
-            <p>Ghaziabad, Uttar Pradesh, 201001</p>
-          </div>
-        </div>
-        <div className="border-t border-gray-800 mt-12 pt-8 text-center">
-          <p>&copy; 2025 SmartSync. All rights reserved.</p>
-          <div className="flex justify-center gap-4 mt-4">
-            <a href="#" className="hover:text-white"><FaChalkboardTeacher size={20} /></a>
-            <a href="#" className="hover:text-white"><FaBookReader size={20} /></a>
-            <a href="#" className="hover:text-white"><FaBrain size={20} /></a>
-          </div>
-        </div>
-      </footer>
+// --- Main Homepage Component ---
+function HomePage() {
+  return (
+    <div className="w-full bg-white">
+      <HeroSection />
+      <StartTeachingSection />
+      <HowToTeachSection />
+      <ReviewsSection />
+      <FaqSection />
+      <BenefitsAndStatsSection />
+      <Footer />
     </div>
   );
 }

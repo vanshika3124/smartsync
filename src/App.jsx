@@ -4,6 +4,7 @@ import SignUpForm from './SignUpForm';
 import LoginForm from './LoginForm';
 import HomePage from './HomePage';
 import TeachersDashboard from './TeachersDashboard'; // 1. Import karein
+import FaqPage from './FaqPage'; // FaqPage.jsx ka path check kar lena
 
 import { Routes, Route } from 'react-router-dom';
 
@@ -16,6 +17,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/register" element={<SignUpForm />} />
         <Route path="/login" element={<LoginForm />} />
+        <Route path="/faqs" element={<FaqPage />} />
         
         {/* 2. Yahan 'div' ko 'TeachersDashboard' se badal dein */}
         <Route path="/dashboard" element={<TeachersDashboard />} /> 
