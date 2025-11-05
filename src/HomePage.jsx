@@ -459,7 +459,7 @@ const Footer = () => {
           
           <Link to="/" className="flex items-center gap-2">
             {/* Logo image hai, isse nahi badla */}
-            <img src="/icons/logo-white.png" alt="SmartSync Logo" className="w-10 h-10" />
+            <img src="/photos/logo.png" alt="SmartSync Logo" className="w-10 h-10" />
             <span className="text-2xl font-bold text-white">SmartSync</span>
           </Link>
         </div>
