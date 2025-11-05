@@ -1,5 +1,3 @@
-// src/pages/LoginForm.jsx
-
 import React, { useState, useEffect, useRef } from 'react';
 import { FaRegEye, FaRegEyeSlash, FaRegUser, FaLock } from 'react-icons/fa';
 import axios from 'axios';
@@ -32,10 +30,8 @@ function LoginForm({ showSignUp }) {
         password: formData.password
       });
 
-      // --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
       if (response.data && response.data.token && response.data.user) {
         localStorage.setItem('token', response.data.token);
-        // User object ko JSON string bana kar save karo
         localStorage.setItem('user', JSON.stringify(response.data.user)); 
         
         if (typeof login === 'function') { login(); }
@@ -58,10 +54,8 @@ function LoginForm({ showSignUp }) {
         tokenId: idToken 
       });
 
-      // --- 🚀🚀 YEH HAI ASLI FIX (Google) 🚀🚀 ---
       if (res.data && res.data.token && res.data.user) {
         localStorage.setItem('token', res.data.token);
-        // User object ko JSON string bana kar save karo
         localStorage.setItem('user', JSON.stringify(res.data.user));
         
         if (typeof login === 'function') { login(); }
@@ -76,7 +70,6 @@ function LoginForm({ showSignUp }) {
     }
   };
 
-  // ... (Baaki ka useEffect aur return code 100% same hai) ...
   useEffect(() => {
     if (window.google && googleButtonRef.current) {
       google.accounts.id.initialize({
@@ -103,14 +96,38 @@ function LoginForm({ showSignUp }) {
         <div className="w-full md:w-1/2 p-6 flex flex-col justify-center md:pl-16">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Sign In</h2>
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"><FaRegUser size={18} /></span><input type="email" placeholder="Enter your email" name="email" value={formData.email} onChange={handleChange} className="w-full p-3 pl-12 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required /></div>
-            <div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"><FaLock size={18} /></span><input type={showPass ? 'text' : 'password'} placeholder="Password" name="password" value={formData.password} onChange={handleChange} className="w-full p-3 pl-12 bg-white border border-gray-300 rounded-lg shadow-sm pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" required /><span onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1-2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700">{showPass ? <FaRegEyeSlash size={18} /> : <FaRegEye size={18} />}</span></div>
-            <div className="flex items-center"><input type="checkbox" id="remember" className="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" /><label htmlFor="remember" className="text-sm text-gray-600">remember me</label></div>
+            {/* Email Field (No change) */}
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"><FaRegUser size={18} /></span>
+              <input type="email" placeholder="Enter your email" name="email" value={formData.email} onChange={handleChange} className="w-full p-3 pl-12 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+            </div>
+            
+            {/* Password Field (FIXED) */}
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"><FaLock size={18} /></span>
+              <input type={showPass ? 'text' : 'password'} placeholder="Password" name="password" value={formData.password} onChange={handleChange} className="w-full p-3 pl-12 bg-white border border-gray-300 rounded-lg shadow-sm pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+              
+              {/* --- 🚀🚀 YAHAN TYPO FIX KIYA HAI 🚀🚀 --- */}
+              {/* 'top-1-2' ko 'top-1/2' kar diya hai */}
+              <span onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700">
+                {showPass ? <FaRegEyeSlash size={18} /> : <FaRegEye size={18} />}
+              </span>
+            </div>
+            
+            {/* Remember Me (No change) */}
+            <div className="flex items-center">
+              <input type="checkbox" id="remember" className="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+              <label htmlFor="remember" className="text-sm text-gray-600">remember me</label>
+            </div>
+            
             <button type="submit" className="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors shadow-md">Login</button>
             {message && (<p className="text-center text-sm font-medium text-red-600">{message}</p>)}
           </form>
+          
           <div className="my-6 flex items-center"><div className="flex-grow border-t border-gray-300"></div><span className="mx-4 text-sm text-gray-500">Or continue with</span><div className="flex-grow border-t border-gray-300"></div></div>
+          
           <div ref={googleButtonRef} className="flex justify-center w-full"></div>
+          
           <p className="text-center text-sm text-gray-600 mt-6">
             Didn't have an account?{' '}
             <Link to="/register" className="font-medium text-blue-600 hover:underline">

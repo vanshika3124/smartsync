@@ -1,36 +1,32 @@
-// src/context/AuthContext.jsx
+import React, { createContext, useContext, useState } from 'react';
 
-import React, { createContext, useState, useContext } from 'react';
+const AuthContext = createContext(null);
 
-// 1. Context banayein
-const AuthContext = createContext();
-
-// 2. Doosre components ko context use karne dein
-export function useAuth() {
-  return useContext(AuthContext);
-}
-
-// 3. Provider component banayein (jo state hold karega)
 export function AuthProvider({ children }) {
-  // Shuru mein, user logged out hai
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  // --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
+  // State ko seedha localStorage se initialize karo
+  // !! (do exclamation) string/null ko true/false mein badal dete hain
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
 
+  // Jab LoginForm.jsx 'login()' call karega, hum state ko true set kar denge
   const login = () => {
-    // Yahan aap future mein token save kar sakte hain
     setIsLoggedIn(true);
   };
 
+  // Jab Navbar.jsx 'logout()' call karega, hum state ko false set kar denge
   const logout = () => {
-    // Yahan aap token clear kar sakte hain
     setIsLoggedIn(false);
+    // localStorage se remove karne ka kaam Navbar/LoginForm mein ho raha hai
   };
 
-  // Yeh value poori app ko milegi
-  const value = {
-    isLoggedIn,
-    login,
-    logout,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
+
+export const useAuth = () => {
+  return useContext(AuthContext);
+};

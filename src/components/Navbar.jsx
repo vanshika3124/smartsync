@@ -1,43 +1,33 @@
-// src/components/Navbar.jsx
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; 
+import { useAuth } from '../context/AuthContext'; // 1. Auth context
 import { FaBars, FaTimes } from 'react-icons/fa';
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { logout } = useAuth(); 
+  
+  // --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
+  // Ab hum 'isLoggedIn' state seedha context se le rahe hain
+  const { isLoggedIn, logout } = useAuth(); 
   const navigate = useNavigate();
   const location = useLocation(); 
 
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
+  // --- 'useState' aur 'useEffect' waali lines HATA DI GAYI HAIN ---
+  // (Kyunki ab context state ko handle kar raha hai)
 
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setIsLoggedIn(!!localStorage.getItem('token'));
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
-
-  // --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
   const handleLogout = () => {
     if (typeof logout === 'function') {
-      logout();
+      logout(); // 1. Context ki state ko 'false' karta hai
     }
-    localStorage.removeItem('token'); 
-    localStorage.removeItem('user'); // <-- USER KO BHI REMOVE KARO
-    setIsLoggedIn(false); 
+    localStorage.removeItem('token'); // 2. Token delete karta hai
+    localStorage.removeItem('user'); // 3. User delete karta hai
     navigate('/'); 
     setIsOpen(false);
   };
   // --- End of Fix ---
 
   const dashboardLink = isLoggedIn ? "/dashboard" : "/login";
-  const classroomLink = isLoggedIn ? "/classroom" : "/login";
+  const classroomLink = isLoggedIn ? "/classroom" : "/login"; 
   const quizLink = isLoggedIn ? "/quiz" : "/login";
   const faqsLink = "/faqs";
 
@@ -61,6 +51,7 @@ function Navbar() {
           <Link to={quizLink} className="text-gray-700 font-medium hover:text-blue-600">Quiz</Link>
           <Link to={faqsLink} className="text-gray-700 font-medium hover:text-blue-600">FAQs</Link>
           
+          {/* Ab yeh 100% sahi chalega */}
           {isLoggedIn ? (
             <button 
               onClick={handleLogout}
@@ -87,6 +78,7 @@ function Navbar() {
         </div>
       </div>
 
+      {/* Mobile Menu */}
       <div className={`transition-all duration-300 ease-in-out overflow-hidden md:hidden ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
         <div className="pt-4 pb-6 border-t border-gray-100 flex flex-col items-start gap-4">
           <Link to={dashboardLink} className="font-medium text-gray-700 hover:text-blue-600" onClick={() => setIsOpen(false)}>Dashboard</Link>
