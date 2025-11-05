@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// useNavigate ab use nahi ho raha, hata sakte hain
 import axios from 'axios';
 import { FiCopy, FiX } from 'react-icons/fi';
 
@@ -8,7 +8,9 @@ function CreateClassroomModal({ isOpen, onClose, onClassroomCreated }) {
   const [createdClass, setCreatedClass] = useState(null); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate();
+
+  // --- 🚀🚀 YEH FIX HAI 🚀🚀 ---
+  const API_URL = import.meta.env.VITE_BACKEND_URL;
 
   const handleOpen = () => {
     setClassroomName('');
@@ -25,24 +27,29 @@ function CreateClassroomModal({ isOpen, onClose, onClassroomCreated }) {
     setLoading(true);
     setError('');
 
+    // --- API_URL check ---
+    if (!API_URL) {
+      setError("Error: Backend URL not found. Deployment config check karo.");
+      setLoading(false);
+      return;
+    }
+
     const JWT_TOKEN = localStorage.getItem('token');
     const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
 
     try {
+      // --- Full URL use kiya ---
       const response = await axios.post(
-        '/api/classroom/create', 
+        `${API_URL}/api/classroom/create`, 
         { name: classroomName }, 
         apiConfig
       );
       
-      // --- 🚀🚀 CODE EXTRACT FIX 🚀🚀 ---
-      // Check karo ki response { classroom: {...} } hai ya seedha {...}
       const responseData = response.data;
       let newClassroom;
-
-      if (responseData.classroom) { // Nested object
+      if (responseData.classroom) {
         newClassroom = responseData.classroom;
-      } else { // Flat object
+      } else {
         newClassroom = responseData;
       }
       
@@ -63,13 +70,13 @@ function CreateClassroomModal({ isOpen, onClose, onClassroomCreated }) {
   };
 
   const handleContinue = () => {
-    onClassroomCreated(); // Dashboard refresh
-    onClose(); // Modal band
+    onClassroomCreated(); 
+    onClose(); 
   }
 
   const handleClose = () => {
     if (createdClass) {
-      onClassroomCreated(); // Refresh karke close
+      onClassroomCreated(); 
     }
     onClose();
   }
@@ -78,6 +85,7 @@ function CreateClassroomModal({ isOpen, onClose, onClassroomCreated }) {
     return null;
   }
 
+  // ... (Baaki ka return JSX same rahega) ...
   return (
     <div 
       className="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4"
@@ -95,14 +103,11 @@ function CreateClassroomModal({ isOpen, onClose, onClassroomCreated }) {
             <FiX size={24} />
         </button>
         
-        {/* Step 2: Success Message */}
         {createdClass ? (
           <div className="p-8 md:p-12 text-center">
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">
               Your classroom has been successfully created
             </h2>
-            
-            {/* --- 🚀🚀 CODE VISIBILITY FIX 🚀🚀 --- */}
             <div className="flex items-center justify-center gap-2 mb-4">
               <span className="text-lg text-gray-600">classroom id:</span>
               <span className="font-bold text-2xl text-gray-900">{createdClass.code}</span>
@@ -114,8 +119,6 @@ function CreateClassroomModal({ isOpen, onClose, onClassroomCreated }) {
                 <FiCopy />
               </button>
             </div>
-            {/* --- End of Fix --- */}
-
             <p className="text-gray-600 mb-8">
               Share this code with students
             </p>
@@ -127,8 +130,6 @@ function CreateClassroomModal({ isOpen, onClose, onClassroomCreated }) {
             </button>
           </div>
         ) : (
-          
-          /* Step 1: Create Form */
           <div className="p-8 md:p-12">
             <h1 className="text-3xl font-bold text-gray-900 mb-8">Create your classroom</h1>
             <form onSubmit={handleCreate}>
@@ -156,7 +157,6 @@ function CreateClassroomModal({ isOpen, onClose, onClassroomCreated }) {
             </form>
           </div>
         )}
-
       </div>
     </div>
   );

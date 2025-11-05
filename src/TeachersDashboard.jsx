@@ -4,38 +4,31 @@ import axios from 'axios';
 import TeachersSidebar from './TeachersSidebar'; 
 import CreateClassroomModal from './CreateClassroomModal'; 
 import { 
-  FiList, 
-  FiClock, 
-  FiUsers, 
-  FiCopy, 
-  FiArrowUpRight,
-  FiTrash // <-- DELETE ICON IMPORT
+  FiList, FiClock, FiUsers, FiCopy, FiArrowUpRight, FiTrash
 } from 'react-icons/fi';
 
+// ... (ClassroomCard aur QuizCard components same rahenge) ...
 // --- Helper Component 1: Classroom Card (Updated) ---
 const ClassroomCard = ({ classroom, onClick, onDelete }) => (
   <div 
-    className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all relative" // <-- 'relative' add kiya
+    className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all relative"
     onClick={() => onClick(classroom._id)} 
   >
-    {/* --- DELETE BUTTON ADDED --- */}
     <button
       onClick={(e) => {
-        e.stopPropagation(); // Card pe click hone se roko
-        onDelete(classroom._id); // Delete function call karo
+        e.stopPropagation(); 
+        onDelete(classroom._id);
       }}
       className="absolute top-4 right-4 text-gray-400 hover:text-red-500"
       title="Delete classroom"
     >
       <FiTrash />
     </button>
-    
     <h3 className="font-bold text-xl text-gray-900">{classroom.name}</h3>
     <p className="text-sm text-gray-500 mb-4">Id . {classroom.code}</p>
     <p className="font-medium text-gray-700">{classroom.students?.length || 0} students</p>
   </div>
 );
-
 // --- Helper Component 2: Quiz Card (No Change) ---
 const QuizCard = ({ quiz }) => (
   <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
@@ -73,7 +66,9 @@ function TeachersDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate(); 
 
-  // --- Data Fetch Logic (No Change) ---
+  // --- 🚀🚀 YEH FIX HAI 🚀🚀 ---
+  const API_URL = import.meta.env.VITE_BACKEND_URL;
+
   const fetchDashboardData = useCallback(async () => {
     const JWT_TOKEN = localStorage.getItem('token'); 
     if (!JWT_TOKEN || JWT_TOKEN === 'undefined' || JWT_TOKEN === 'null') {
@@ -82,10 +77,19 @@ function TeachersDashboard() {
       navigate('/login'); 
       return; 
     }
+    // --- API_URL check ---
+    if (!API_URL) {
+      setError("Error: Backend URL not found. Deployment config check karo.");
+      setLoading(false);
+      return;
+    }
+
     const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
     setLoading(true);
     try {
-      const classroomRes = await axios.get('/api/classroom/my', apiConfig);
+      // --- Full URL use kiya ---
+      const classroomRes = await axios.get(`${API_URL}/api/classroom/my`, apiConfig);
+      
       let fetchedClassrooms = [];
       if (Array.isArray(classroomRes.data)) {
         fetchedClassrooms = classroomRes.data;
@@ -97,9 +101,11 @@ function TeachersDashboard() {
         setClassrooms([]);
       }
       setClassrooms(fetchedClassrooms);
+
       if (fetchedClassrooms.length > 0) {
         const firstClassroomId = fetchedClassrooms[0]._id;
-        const quizRes = await axios.get(`/api/quiz/classroom/${firstClassroomId}`, apiConfig);
+        // --- Full URL use kiya ---
+        const quizRes = await axios.get(`${API_URL}/api/quiz/classroom/${firstClassroomId}`, apiConfig);
         if (Array.isArray(quizRes.data)) {
           setQuizzes(quizRes.data); 
         } else { setQuizzes([]); }
@@ -115,42 +121,34 @@ function TeachersDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [navigate]); 
+  }, [navigate, API_URL]); // <-- API_URL dependency add ki
 
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  // --- Classroom Click (No Change) ---
   const handleClassroomClick = (classroomId) => {
     navigate(`/classroom/${classroomId}`);
   };
 
-  // --- 🚀🚀 DELETE CLASSROOM FUNCTION ADDED 🚀🚀 ---
   const handleDeleteClassroom = async (classroomId) => {
-    // Pehle confirm karo
     if (!window.confirm("Pakka delete karna hai? Is classroom ka saara data (quiz, notes) delete ho jaayega.")) {
       return;
     }
-
     const JWT_TOKEN = localStorage.getItem('token');
     const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
-
     try {
-      // YEH API BACKEND MEIN HONI CHAHIYE
-      await axios.delete(`/api/classroom/${classroomId}`, apiConfig);
-      
-      // List se refresh karo (bina page reload kiye)
+      // --- Full URL use kiya ---
+      await axios.delete(`${API_URL}/api/classroom/${classroomId}`, apiConfig);
       setClassrooms(prevClassrooms => prevClassrooms.filter(cls => cls._id !== classroomId));
       alert("Classroom successfully delete ho gayi.");
-
     } catch (err) {
       console.error("Error deleting classroom:", err);
       alert("Error: Classroom delete nahi hui. Backend API check karo.");
     }
   };
 
-  // --- Render Content Logic ---
+  // ... (renderContent function same rahega) ...
   const renderContent = () => {
     if (loading && classrooms.length === 0) {
       return <p className="text-center text-gray-500">Aapka dashboard load ho raha hai...</p>;
@@ -160,7 +158,6 @@ function TeachersDashboard() {
     }
     return (
       <>
-        {/* Your Classrooms Section */}
         <section className="mb-12">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-3xl font-semibold text-gray-800">Your classrooms</h2>
@@ -178,7 +175,7 @@ function TeachersDashboard() {
                   key={cls._id} 
                   classroom={cls} 
                   onClick={handleClassroomClick}
-                  onDelete={handleDeleteClassroom} // <-- Prop pass kiya
+                  onDelete={handleDeleteClassroom} 
                 />
               ))
             ) : (
@@ -186,8 +183,6 @@ function TeachersDashboard() {
             )}
           </div>
         </section>
-
-        {/* Your Recent Quizzes Section (No Change) */}
         <section>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-3xl font-semibold text-gray-800">Your recent quizzes</h2>
@@ -211,7 +206,7 @@ function TeachersDashboard() {
       </>
     );
   };
-
+  
   // --- Main Return (No Change) ---
   return (
     <div className="w-full min-h-screen bg-gray-50 flex">
