@@ -3,12 +3,18 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import TeachersSidebar from './TeachersSidebar'; 
 import CreateClassroomModal from './CreateClassroomModal'; 
+import AlertModal from './AlertModal';
 import { 
-  FiList, FiClock, FiUsers, FiCopy, FiArrowUpRight, FiTrash
+  FiList, 
+  FiClock, 
+  FiUsers, 
+  FiCopy, 
+  FiArrowUpRight,
+  FiTrash
 } from 'react-icons/fi';
 
 // ... (ClassroomCard aur QuizCard components same rahenge) ...
-// --- Helper Component 1: Classroom Card (Updated) ---
+// --- Helper Component 1: Classroom Card ---
 const ClassroomCard = ({ classroom, onClick, onDelete }) => (
   <div 
     className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all relative"
@@ -29,12 +35,12 @@ const ClassroomCard = ({ classroom, onClick, onDelete }) => (
     <p className="font-medium text-gray-700">{classroom.students?.length || 0} students</p>
   </div>
 );
-// --- Helper Component 2: Quiz Card (No Change) ---
+// --- Helper Component 2: Quiz Card ---
 const QuizCard = ({ quiz }) => (
   <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
     <div className="flex justify-between items-start mb-4">
       <h3 className="font-bold text-2xl text-gray-900">{quiz.title}</h3>
-      {quiz.id && <span className="text-sm text-gray-400">id.{quiz.id}</span>}
+      {quiz._id && <span className="text-sm text-gray-400">id.{quiz._id}</span>}
     </div>
     <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-gray-600 text-sm mb-6">
       <span className="flex items-center gap-1.5"><FiList className="w-4 h-4" />{quiz.questions?.length || 0} questions</span>
@@ -65,10 +71,18 @@ function TeachersDashboard() {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate(); 
+  const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
 
-  // --- 🚀🚀 YEH FIX HAI 🚀🚀 ---
-  const API_URL = import.meta.env.VITE_BACKEND_URL;
+  const [alertConfig, setAlertConfig] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'alert',
+    status: 'success',
+    onConfirm: null,
+  });
 
+  // --- Data Fetch Logic ---
   const fetchDashboardData = useCallback(async () => {
     const JWT_TOKEN = localStorage.getItem('token'); 
     if (!JWT_TOKEN || JWT_TOKEN === 'undefined' || JWT_TOKEN === 'null') {
@@ -77,83 +91,115 @@ function TeachersDashboard() {
       navigate('/login'); 
       return; 
     }
-    // --- API_URL check ---
-    if (!API_URL) {
-      setError("Error: Backend URL not found. Deployment config check karo.");
+    if (!API_URL && !import.meta.env.DEV) {
+      setError("Error: Backend URL not found.");
       setLoading(false);
       return;
     }
-
     const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
     setLoading(true);
+    
+    // --- 🚀🚀 YEH HAI ASLI FIX (Error Handling Update) 🚀🚀 ---
     try {
-      // --- Full URL use kiya ---
+      // 1. Fetch Classrooms
       const classroomRes = await axios.get(`${API_URL}/api/classroom/my`, apiConfig);
-      
       let fetchedClassrooms = [];
       if (Array.isArray(classroomRes.data)) {
         fetchedClassrooms = classroomRes.data;
       } else if (classroomRes.data && Array.isArray(classroomRes.data.teacher)) {
         fetchedClassrooms = classroomRes.data.teacher; 
       } else {
-        console.error("Unexpected API response for classrooms:", classroomRes.data);
-        setError("API se classroom data format galat mila.");
         setClassrooms([]);
       }
       setClassrooms(fetchedClassrooms);
-
-      if (fetchedClassrooms.length > 0) {
-        const firstClassroomId = fetchedClassrooms[0]._id;
-        // --- Full URL use kiya ---
-        const quizRes = await axios.get(`${API_URL}/api/quiz/classroom/${firstClassroomId}`, apiConfig);
-        if (Array.isArray(quizRes.data)) {
-          setQuizzes(quizRes.data); 
-        } else { setQuizzes([]); }
-      }
-      setError(null);
+      setError(null); // Clear error agar classroom load ho gayi
     } catch (err) {
-      console.error("Error fetching dashboard data:", err);
-      setError("Dashboard data load nahi hua. Token invalid ho sakta hai.");
+      // Agar classroom hi load nahi hui, toh poora page fail
+      console.error("Error fetching classrooms:", err);
+      setError("Classroom data load nahi hua.");
       if (err.response && err.response.status === 401) {
         localStorage.removeItem('token'); 
         navigate('/login');
       }
-    } finally {
       setLoading(false);
+      return; // Function se nikal jao
     }
-  }, [navigate, API_URL]); // <-- API_URL dependency add ki
+
+    try {
+      // 2. Fetch Recent Quizzes
+      const quizRes = await axios.get(`${API_URL}/api/quiz/my-recent`, apiConfig);
+      if (quizRes.data && Array.isArray(quizRes.data.quizzes)) {
+        setQuizzes(quizRes.data.quizzes);
+      } else { 
+        console.error("Unexpected API response for quizzes:", quizRes.data);
+        setQuizzes([]); 
+      }
+    } catch (quizErr) {
+      // Agar sirf quiz fail hua hai, toh page crash mat karo
+      console.error("Error fetching recent quizzes:", quizErr);
+      setError("Classrooms load ho gaye, par recent quizzes nahi hue. (API Error)");
+      setQuizzes([]); // Quizzes khaali dikhao
+    }
+    // --- End of Fix ---
+
+    setLoading(false); // Sab kuch done
+  }, [navigate, API_URL]); 
 
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
+
+  // ... (Baaki saara code 100% same hai) ...
 
   const handleClassroomClick = (classroomId) => {
     navigate(`/classroom/${classroomId}`);
   };
 
   const handleDeleteClassroom = async (classroomId) => {
-    if (!window.confirm("Pakka delete karna hai? Is classroom ka saara data (quiz, notes) delete ho jaayega.")) {
-      return;
-    }
+    setAlertConfig({
+      isOpen: true,
+      title: "Delete Classroom?",
+      message: "Pakka delete karna hai? Is classroom ka saara data (quiz, notes) delete ho jaayega.",
+      type: 'confirm',
+      status: 'warning',
+      onConfirm: () => executeDelete(classroomId)
+    });
+  };
+
+  const executeDelete = async (classroomId) => {
     const JWT_TOKEN = localStorage.getItem('token');
     const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
     try {
-      // --- Full URL use kiya ---
       await axios.delete(`${API_URL}/api/classroom/${classroomId}`, apiConfig);
       setClassrooms(prevClassrooms => prevClassrooms.filter(cls => cls._id !== classroomId));
-      alert("Classroom successfully delete ho gayi.");
+      setAlertConfig({
+        isOpen: true,
+        title: "Deleted!",
+        message: "Classroom successfully delete ho gayi.",
+        type: 'alert',
+        status: 'success',
+      });
     } catch (err) {
       console.error("Error deleting classroom:", err);
-      alert("Error: Classroom delete nahi hui. Backend API check karo.");
+      setAlertConfig({
+        isOpen: true,
+        title: "Error",
+        message: "Error: Classroom delete nahi hui.",
+        type: 'alert',
+        status: 'warning',
+      });
     }
   };
 
-  // ... (renderContent function same rahega) ...
+  const closeAlertModal = () => {
+    setAlertConfig({ isOpen: false, title: '', message: '' });
+  };
+
   const renderContent = () => {
     if (loading && classrooms.length === 0) {
       return <p className="text-center text-gray-500">Aapka dashboard load ho raha hai...</p>;
     }
-    if (error) {
+    if (error && classrooms.length === 0) { // Agar classroom hi load nahi hui
       return <p className="text-center text-red-500">{error}</p>;
     }
     return (
@@ -193,13 +239,15 @@ function TeachersDashboard() {
               Create new quiz
             </Link>
           </div>
+          {/* Agar quiz waali API fail hui hai, toh yahan error dikhao */}
+          {error && quizzes.length === 0 && <p className="text-center text-red-500 mb-4">{error}</p>}
           <div className="space-y-6">
             {quizzes.length > 0 ? (
                 quizzes.map(quiz => (
                   <QuizCard key={quiz._id} quiz={quiz} />
                 ))
               ) : (
-                !loading && <p>Aapne abhi koi quiz nahi banaya hai.</p>
+                !loading && !error && <p>Aapne abhi koi quiz nahi banaya hai.</p>
               )}
           </div>
         </section>
@@ -207,7 +255,6 @@ function TeachersDashboard() {
     );
   };
   
-  // --- Main Return (No Change) ---
   return (
     <div className="w-full min-h-screen bg-gray-50 flex">
       <TeachersSidebar />
@@ -222,6 +269,15 @@ function TeachersDashboard() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onClassroomCreated={fetchDashboardData} 
+      />
+      <AlertModal 
+        isOpen={alertConfig.isOpen}
+        onClose={closeAlertModal}
+        onConfirm={alertConfig.onConfirm}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        status={alertConfig.status}
       />
     </div>
   );
