@@ -3,26 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function CreateQuiz() {
-  // Form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [classroomId, setClassroomId] = useState('');
   const [durationMinutes, setDurationMinutes] = useState(15);
-  
-  // State for dropdown
   const [classrooms, setClassrooms] = useState([]);
-  
-  // State for UI
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [createdQuiz, setCreatedQuiz] = useState(null); // Success state
+  const [createdQuiz, setCreatedQuiz] = useState(null); 
 
   const navigate = useNavigate();
   const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
   const JWT_TOKEN = localStorage.getItem('token');
   const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
 
-  // 1. Load classrooms for the dropdown
+  // Load classrooms (Same)
   useEffect(() => {
     const fetchClassrooms = async () => {
       try {
@@ -40,9 +35,9 @@ function CreateQuiz() {
       }
     };
     fetchClassrooms();
-  }, [API_URL, JWT_TOKEN]); // Removed apiConfig from dependency
+  }, [API_URL, JWT_TOKEN]); // Removed apiConfig
 
-  // 2. Handle Quiz Create
+  // --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!classroomId) {
@@ -53,15 +48,28 @@ function CreateQuiz() {
     setError('');
 
     try {
-      // API call: POST /api/quiz/create
       const response = await axios.post(
         `${API_URL}/api/quiz/create`,
         { title, description, classroomId, durationMinutes },
         apiConfig
       );
       
-      // Success! Show the success message
-      setCreatedQuiz(response.data); // Save the new quiz data
+      console.log("Quiz Create API Response:", response.data); // Check console
+
+      // Ab hum response ko deeply check karenge
+      const responseData = response.data;
+
+      if (responseData && (responseData._id || responseData.quizId || responseData.id)) {
+        // Case 1: Flat object { _id: ... }
+        setCreatedQuiz(responseData);
+      } else if (responseData && responseData.quiz && responseData.quiz._id) {
+        // Case 2: Nested object { quiz: { _id: ... } }
+        setCreatedQuiz(responseData.quiz);
+      } else {
+        // Case 3: Pata nahi kya aaya
+        console.error("Unknown API response structure:", responseData);
+        setError("Quiz create ho gaya, par response structure galat tha.");
+      }
       
     } catch (err) {
       console.error("Error creating quiz:", err);
@@ -71,18 +79,24 @@ function CreateQuiz() {
     }
   };
 
-  // 3. Handle Continue -> Navigate to Add Questions page
+  // handleContinue function ab sahi 'createdQuiz' state use karega
   const handleContinue = () => {
-    // API response mein se quiz ki ID nikaalo (e.g., _id)
-    const newQuizId = createdQuiz._id; 
-    navigate(`/quiz/${newQuizId}/add-questions`);
+    const newQuizId = createdQuiz?._id || createdQuiz?.quizId || createdQuiz?.id; 
+
+    if (newQuizId) {
+      navigate(`/quiz/${newQuizId}/add-questions`);
+    } else {
+      setError("Error: Quiz ID nahi mila. Dashboard pe waapis jaao.");
+      console.error("Could not find ID in createdQuiz object:", createdQuiz);
+      setCreatedQuiz(null); 
+    }
   };
+  // --- End of Fix ---
 
 
-  // --- Render Logic ---
-
-  // Step 2: Show Success Message (Image 1 bottom)
+  // Step 2: Show Success Message
   if (createdQuiz) {
+    const quizIdToShow = createdQuiz._id || createdQuiz.quizId || createdQuiz.id;
     return (
       <main className="flex-1 p-8 md:p-12 bg-blue-50 min-h-screen flex items-center justify-center">
         <div className="bg-white p-8 md:p-12 rounded-2xl shadow-lg max-w-lg w-full text-center">
@@ -91,8 +105,7 @@ function CreateQuiz() {
           </h2>
           <div className="flex items-center justify-center gap-2 mb-8">
             <span className="text-lg text-gray-600">quiz id .</span>
-            {/* API response se quizId ya _id dikhao */}
-            <span className="font-bold text-2xl text-gray-900">.{createdQuiz.quizId || createdQuiz._id}</span>
+            <span className="font-bold text-2xl text-gray-900">.{quizIdToShow}</span>
           </div>
           <button 
             onClick={handleContinue}
@@ -105,7 +118,7 @@ function CreateQuiz() {
     );
   }
 
-  // Step 1: Show Create Form (Image 1 top)
+  // Step 1: Show Create Form (Same)
   return (
     <main className="flex-1 p-8 md:p-12 bg-blue-50 min-h-screen">
       <div className="max-w-4xl mx-auto">
@@ -114,7 +127,6 @@ function CreateQuiz() {
         
         <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-lg">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {/* Quiz Title */}
             <div className="md:col-span-1">
               <label htmlFor="title" className="block text-lg font-medium text-gray-700 mb-2">Quiz Title</label>
               <input 
@@ -126,7 +138,6 @@ function CreateQuiz() {
                 required
               />
             </div>
-            {/* Class Dropdown */}
             <div>
               <label htmlFor="class" className="block text-lg font-medium text-gray-700 mb-2">Class</label>
               <select 
@@ -142,7 +153,6 @@ function CreateQuiz() {
                 ))}
               </select>
             </div>
-            {/* Time Limit */}
             <div>
               <label htmlFor="duration" className="block text-lg font-medium text-gray-700 mb-2">Time limit (in minutes)</label>
               <input 
@@ -155,7 +165,6 @@ function CreateQuiz() {
             </div>
           </div>
           
-          {/* Description */}
           <div className="mb-8">
             <label htmlFor="description" className="block text-lg font-medium text-gray-700 mb-2">Description</label>
             <textarea 

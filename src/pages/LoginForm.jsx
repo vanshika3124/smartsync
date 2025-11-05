@@ -1,86 +1,75 @@
+// src/pages/LoginForm.jsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import { FaRegEye, FaRegEyeSlash, FaRegUser, FaLock } from 'react-icons/fa';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext'; // Yeh crash kar sakta hai
+import { useAuth } from '../context/AuthContext';
 
-const GOOGLE_CLIENT_ID = "768160812865-co6puu6esh3o6731p60mcdifcthd4u8u.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "768160812865-co6puu6esh3o6731p60mcdifcthd4u8u.apps.googleusercontent.com"; // Example ID
 
 function LoginForm({ showSignUp }) {
-  // --- CRASH FIX 1: useAuth ko safe banaya ---
   const auth = useAuth();
-  const login = auth ? auth.login : null; // Check karo auth null toh nahi
-
+  const login = auth ? auth.login : null;
   const [showPass, setShowPass] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [message, setMessage] = useState('');
   const googleButtonRef = useRef(null);
   const navigate = useNavigate();
-
-  // --- API_URL HATA DIYA (aapka proxy use hoga) ---
+  const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('Logging in...');
+    if (!API_URL && !import.meta.env.DEV) {
+      setMessage("Error: Backend URL not found.");
+      return;
+    }
     
     try {
-      // --- Relative path (aapka proxy) ---
-      const response = await axios.post('/api/auth/teacher/login', {
+      const response = await axios.post(`${API_URL}/api/auth/teacher/login`, {
         email: formData.email,
         password: formData.password
       });
 
-      // --- 2. ASLI LOOP FIX YAHAN HAI ---
-      // Check karo ki 'token' mila hai ya nahi
-      if (response.data && response.data.token) {
+      // --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
+      if (response.data && response.data.token && response.data.user) {
         localStorage.setItem('token', response.data.token);
+        // User object ko JSON string bana kar save karo
+        localStorage.setItem('user', JSON.stringify(response.data.user)); 
         
-        // Crash Fix 2: Check karo login function hai ya nahi
-        if (typeof login === 'function') {
-          login(); 
-        }
-        
+        if (typeof login === 'function') { login(); }
         setMessage('Success! Redirecting...');
-        navigate('/dashboard'); // Ab dashboard pe jao
+        navigate('/dashboard'); 
       } else {
-        // Agar success hua par token nahi mila
-        setMessage(response.data.message || 'Login successful, but no token received.');
+        setMessage(response.data.message || 'Error: Invalid credentials.');
       }
-
     } catch (error) {
       console.error('Login failed:', error);
       setMessage(error.response?.data?.message || 'Error: Invalid credentials.');
     }
   };
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
   const handleGoogleLogin = async (response) => {
     const idToken = response.credential;
     setMessage('Verifying Google Sign-In...');
-
     try {
-      // --- Relative path (aapka proxy) aur 'tokenId' (docs ke hisab se) ---
-      const res = await axios.post('/api/auth/teacher/google-login', { 
+      const res = await axios.post(`${API_URL}/api/auth/teacher/google-login`, { 
         tokenId: idToken 
       });
 
-      // --- 3. ASLI LOOP FIX YAHAN BHI ---
-      if (res.data && res.data.token) {
+      // --- 🚀🚀 YEH HAI ASLI FIX (Google) 🚀🚀 ---
+      if (res.data && res.data.token && res.data.user) {
         localStorage.setItem('token', res.data.token);
-
-        if (typeof login === 'function') {
-          login();
-        }
+        // User object ko JSON string bana kar save karo
+        localStorage.setItem('user', JSON.stringify(res.data.user));
         
+        if (typeof login === 'function') { login(); }
         setMessage('Success! Redirecting...');
         navigate('/dashboard');
       } else {
         setMessage(res.data.message || 'Error: Google Sign-In failed.');
       }
-
     } catch (error) {
       console.error('Google Login failed:', error);
       setMessage(error.response?.data?.message || 'Error: Google Sign-In failed.');
@@ -88,7 +77,6 @@ function LoginForm({ showSignUp }) {
   };
 
   // ... (Baaki ka useEffect aur return code 100% same hai) ...
-
   useEffect(() => {
     if (window.google && googleButtonRef.current) {
       google.accounts.id.initialize({
@@ -101,6 +89,10 @@ function LoginForm({ showSignUp }) {
       );
     }
   }, []); 
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   return (
     <div className="flex-grow flex items-center justify-center p-4 md:p-12">

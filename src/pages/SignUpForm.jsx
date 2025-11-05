@@ -3,7 +3,7 @@ import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
 // 1. 'useNavigate' IMPORT KAREIN
 import { Link, useNavigate } from 'react-router-dom'; 
-import { useAuth } from './context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 function SignUpForm() {
   const { login } = useAuth(); 

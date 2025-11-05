@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom'; 
 import axios from 'axios';
-import TeachersSidebar from './TeachersSidebar'; 
-import CreateClassroomModal from './CreateClassroomModal'; 
-import AlertModal from './AlertModal';
+// import TeachersSidebar from './TeachersSidebar'; // Yeh line pehle se commented hai, sahi hai
+import CreateClassroomModal from '../components/CreateClassroomModal'; 
+import AlertModal from '../components/AlertModal';
 import { 
   FiList, 
   FiClock, 
@@ -36,11 +36,23 @@ const ClassroomCard = ({ classroom, onClick, onDelete }) => (
   </div>
 );
 // --- Helper Component 2: Quiz Card ---
-const QuizCard = ({ quiz }) => (
-  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-    <div className="flex justify-between items-start mb-4">
-      <h3 className="font-bold text-2xl text-gray-900">{quiz.title}</h3>
+const QuizCard = ({ quiz, onDelete }) => (
+  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
+    <div className="absolute top-6 right-6 flex items-center gap-2">
       {quiz._id && <span className="text-sm text-gray-400">id.{quiz._id}</span>}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(quiz._id);
+        }}
+        className="text-gray-400 hover:text-red-500"
+        title="Delete quiz"
+      >
+        <FiTrash className="w-4 h-4" />
+      </button>
+    </div>
+    <div className="mb-4">
+      <h3 className="font-bold text-2xl text-gray-900 pr-20">{quiz.title}</h3>
     </div>
     <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-gray-600 text-sm mb-6">
       <span className="flex items-center gap-1.5"><FiList className="w-4 h-4" />{quiz.questions?.length || 0} questions</span>
@@ -70,6 +82,7 @@ function TeachersDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userName, setUserName] = useState(''); // <-- 1. NAAM KE LIYE STATE
   const navigate = useNavigate(); 
   const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
 
@@ -82,8 +95,24 @@ function TeachersDashboard() {
     onConfirm: null,
   });
 
-  // --- Data Fetch Logic ---
+  // --- 2. NAAM LOAD KARNE KE LIYE ALAG useEffect ---
+  useEffect(() => {
+    try {
+      const storedUser = JSON.parse(localStorage.getItem('user'));
+      if (storedUser && storedUser.name) {
+        setUserName(storedUser.name); // Set the name
+      } else {
+        setUserName('Teacher'); // Fallback
+      }
+    } catch (e) {
+      console.error("User details nahi milin", e);
+      setUserName('Teacher'); // Fallback
+    }
+  }, []); // Empty array = sirf ek baar chalao
+
+  // --- Data Fetch Logic (No Change) ---
   const fetchDashboardData = useCallback(async () => {
+    // ... (poora fetchDashboardData function same rahega) ...
     const JWT_TOKEN = localStorage.getItem('token'); 
     if (!JWT_TOKEN || JWT_TOKEN === 'undefined' || JWT_TOKEN === 'null') {
       setError("Aap logged in nahi hain. Please login.");
@@ -98,10 +127,7 @@ function TeachersDashboard() {
     }
     const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
     setLoading(true);
-    
-    // --- 🚀🚀 YEH HAI ASLI FIX (Error Handling Update) 🚀🚀 ---
     try {
-      // 1. Fetch Classrooms
       const classroomRes = await axios.get(`${API_URL}/api/classroom/my`, apiConfig);
       let fetchedClassrooms = [];
       if (Array.isArray(classroomRes.data)) {
@@ -112,9 +138,8 @@ function TeachersDashboard() {
         setClassrooms([]);
       }
       setClassrooms(fetchedClassrooms);
-      setError(null); // Clear error agar classroom load ho gayi
+      setError(null); 
     } catch (err) {
-      // Agar classroom hi load nahi hui, toh poora page fail
       console.error("Error fetching classrooms:", err);
       setError("Classroom data load nahi hua.");
       if (err.response && err.response.status === 401) {
@@ -122,35 +147,28 @@ function TeachersDashboard() {
         navigate('/login');
       }
       setLoading(false);
-      return; // Function se nikal jao
+      return;
     }
-
     try {
-      // 2. Fetch Recent Quizzes
       const quizRes = await axios.get(`${API_URL}/api/quiz/my-recent`, apiConfig);
       if (quizRes.data && Array.isArray(quizRes.data.quizzes)) {
         setQuizzes(quizRes.data.quizzes);
       } else { 
-        console.error("Unexpected API response for quizzes:", quizRes.data);
         setQuizzes([]); 
       }
     } catch (quizErr) {
-      // Agar sirf quiz fail hua hai, toh page crash mat karo
       console.error("Error fetching recent quizzes:", quizErr);
       setError("Classrooms load ho gaye, par recent quizzes nahi hue. (API Error)");
-      setQuizzes([]); // Quizzes khaali dikhao
+      setQuizzes([]);
     }
-    // --- End of Fix ---
-
-    setLoading(false); // Sab kuch done
+    setLoading(false);
   }, [navigate, API_URL]); 
 
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  // ... (Baaki saara code 100% same hai) ...
-
+  // ... (baaki saare functions same rahenge) ...
   const handleClassroomClick = (classroomId) => {
     navigate(`/classroom/${classroomId}`);
   };
@@ -162,11 +180,11 @@ function TeachersDashboard() {
       message: "Pakka delete karna hai? Is classroom ka saara data (quiz, notes) delete ho jaayega.",
       type: 'confirm',
       status: 'warning',
-      onConfirm: () => executeDelete(classroomId)
+      onConfirm: () => executeDeleteClassroom(classroomId)
     });
   };
 
-  const executeDelete = async (classroomId) => {
+  const executeDeleteClassroom = async (classroomId) => {
     const JWT_TOKEN = localStorage.getItem('token');
     const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
     try {
@@ -191,15 +209,53 @@ function TeachersDashboard() {
     }
   };
 
+  const handleDeleteQuiz = (quizId) => {
+    setAlertConfig({
+      isOpen: true,
+      title: "Delete Quiz?",
+      message: "Pakka yeh quiz delete karna hai?",
+      type: 'confirm',
+      status: 'warning',
+      onConfirm: () => executeDeleteQuiz(quizId)
+    });
+  };
+
+  const executeDeleteQuiz = async (quizId) => {
+    const JWT_TOKEN = localStorage.getItem('token');
+    const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
+
+    try {
+      await axios.delete(`${API_URL}/api/quiz/${quizId}`, apiConfig);
+      setQuizzes(prevQuizzes => prevQuizzes.filter(quiz => quiz._id !== quizId));
+      setAlertConfig({
+        isOpen: true,
+        title: "Deleted!",
+        message: "Quiz successfully delete ho gaya.",
+        type: 'alert',
+        status: 'success',
+      });
+    } catch (err) {
+      console.error("Error deleting quiz:", err);
+      setAlertConfig({
+        isOpen: true,
+        title: "Error",
+        message: "Error: Quiz delete nahi hua.",
+        type: 'alert',
+        status: 'warning',
+      });
+    }
+  };
+
   const closeAlertModal = () => {
     setAlertConfig({ isOpen: false, title: '', message: '' });
   };
-
+  
   const renderContent = () => {
+    // ... (renderContent logic same) ...
     if (loading && classrooms.length === 0) {
       return <p className="text-center text-gray-500">Aapka dashboard load ho raha hai...</p>;
     }
-    if (error && classrooms.length === 0) { // Agar classroom hi load nahi hui
+    if (error && classrooms.length === 0) { 
       return <p className="text-center text-red-500">{error}</p>;
     }
     return (
@@ -239,12 +295,15 @@ function TeachersDashboard() {
               Create new quiz
             </Link>
           </div>
-          {/* Agar quiz waali API fail hui hai, toh yahan error dikhao */}
           {error && quizzes.length === 0 && <p className="text-center text-red-500 mb-4">{error}</p>}
           <div className="space-y-6">
             {quizzes.length > 0 ? (
                 quizzes.map(quiz => (
-                  <QuizCard key={quiz._id} quiz={quiz} />
+                  <QuizCard 
+                    key={quiz._id} 
+                    quiz={quiz} 
+                    onDelete={handleDeleteQuiz} 
+                  />
                 ))
               ) : (
                 !loading && !error && <p>Aapne abhi koi quiz nahi banaya hai.</p>
@@ -255,16 +314,18 @@ function TeachersDashboard() {
     );
   };
   
+  // --- Main Return ---
   return (
-    <div className="w-full min-h-screen bg-gray-50 flex">
-      <TeachersSidebar />
-      <main className="flex-1 p-8 md:p-12">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900">Teachers dashboard</h1>
-          <p className="text-lg text-gray-600">Welcome back, Mrs. Anjali Singh</p>
-        </div>
-        {renderContent()}
-      </main>
+    <main className="flex-1 p-8 md:p-12">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-gray-900">Teachers dashboard</h1>
+        
+        {/* --- 3. NAAM YAHAN UPDATE KIYA --- */}
+        <p className="text-lg text-gray-600">Welcome back, {userName}</p>
+        
+      </div>
+      {renderContent()}
+
       <CreateClassroomModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -279,7 +340,7 @@ function TeachersDashboard() {
         type={alertConfig.type}
         status={alertConfig.status}
       />
-    </div>
+    </main>
   );
 }
 
