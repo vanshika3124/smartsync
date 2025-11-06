@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom'; 
 import axios from 'axios';
-// import TeachersSidebar from './TeachersSidebar'; // Yeh line pehle se commented hai, sahi hai
-import CreateClassroomModal from '../components/CreateClassroomModal'; 
-import AlertModal from '../components/AlertModal';
+// import TeachersSidebar from './TeachersSidebar'; // Already commented out, good
+import AlertModal from '../components/AlertModal'; // Alert modal (for delete)
+// --- CreateClassroomModal IMPORT HATA DIYA ---
 import { 
   FiList, 
   FiClock, 
@@ -52,7 +52,12 @@ const QuizCard = ({ quiz, onDelete }) => (
       </button>
     </div>
     <div className="mb-4">
-      <h3 className="font-bold text-2xl text-gray-900 pr-20">{quiz.title}</h3>
+      <Link 
+        to={`/quiz/${quiz._id}`} 
+        className="font-bold text-2xl text-gray-900 pr-20 hover:text-blue-600 hover:underline"
+      >
+        {quiz.title}
+      </Link>
     </div>
     <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-gray-600 text-sm mb-6">
       <span className="flex items-center gap-1.5"><FiList className="w-4 h-4" />{quiz.questions?.length || 0} questions</span>
@@ -81,8 +86,8 @@ function TeachersDashboard() {
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [userName, setUserName] = useState(''); // <-- 1. NAAM KE LIYE STATE
+  // --- isModalOpen STATE HATA DIYA ---
+  const [userName, setUserName] = useState('');
   const navigate = useNavigate(); 
   const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
 
@@ -95,24 +100,22 @@ function TeachersDashboard() {
     onConfirm: null,
   });
 
-  // --- 2. NAAM LOAD KARNE KE LIYE ALAG useEffect ---
   useEffect(() => {
     try {
       const storedUser = JSON.parse(localStorage.getItem('user'));
       if (storedUser && storedUser.name) {
-        setUserName(storedUser.name); // Set the name
+        setUserName(storedUser.name);
       } else {
-        setUserName('Teacher'); // Fallback
+        setUserName('Teacher');
       }
     } catch (e) {
-      console.error("User details not found", e);
-      setUserName('Teacher'); // Fallback
+      console.error("Failed to parse user details", e);
+      setUserName('Teacher');
     }
-  }, []); // Empty array = sirf ek baar chalao
+  }, []);
 
   // --- Data Fetch Logic (No Change) ---
   const fetchDashboardData = useCallback(async () => {
-    // ... (poora fetchDashboardData function same rahega) ...
     const JWT_TOKEN = localStorage.getItem('token'); 
     if (!JWT_TOKEN || JWT_TOKEN === 'undefined' || JWT_TOKEN === 'null') {
       setError("You are not logged in. Please login.");
@@ -127,6 +130,7 @@ function TeachersDashboard() {
     }
     const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
     setLoading(true);
+    
     try {
       const classroomRes = await axios.get(`${API_URL}/api/classroom/my`, apiConfig);
       let fetchedClassrooms = [];
@@ -141,7 +145,7 @@ function TeachersDashboard() {
       setError(null); 
     } catch (err) {
       console.error("Error fetching classrooms:", err);
-      setError("Classroom data load nahi hua.");
+      setError("Failed to load classroom data.");
       if (err.response && err.response.status === 401) {
         localStorage.removeItem('token'); 
         navigate('/login');
@@ -149,6 +153,7 @@ function TeachersDashboard() {
       setLoading(false);
       return;
     }
+
     try {
       const quizRes = await axios.get(`${API_URL}/api/quiz/my-recent`, apiConfig);
       if (quizRes.data && Array.isArray(quizRes.data.quizzes)) {
@@ -158,9 +163,10 @@ function TeachersDashboard() {
       }
     } catch (quizErr) {
       console.error("Error fetching recent quizzes:", quizErr);
-      setError("Classrooms loaded, but recent quizzes not. (API Error)");
+      setError("Classrooms loaded, but failed to load recent quizzes. (API Error)");
       setQuizzes([]);
     }
+    
     setLoading(false);
   }, [navigate, API_URL]); 
 
@@ -168,7 +174,7 @@ function TeachersDashboard() {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  // ... (baaki saare functions same rahenge) ...
+  // ... (Baaki saare functions same rahenge) ...
   const handleClassroomClick = (classroomId) => {
     navigate(`/classroom/${classroomId}`);
   };
@@ -177,7 +183,7 @@ function TeachersDashboard() {
     setAlertConfig({
       isOpen: true,
       title: "Delete Classroom?",
-      message: "Delete Classroom? All data of the classroom will be deleted.",
+      message: "Are you sure? All data (quizzes, notes) for this classroom will be deleted.",
       type: 'confirm',
       status: 'warning',
       onConfirm: () => executeDeleteClassroom(classroomId)
@@ -193,7 +199,7 @@ function TeachersDashboard() {
       setAlertConfig({
         isOpen: true,
         title: "Deleted!",
-        message: "Deleted Successfully.",
+        message: "Classroom successfully deleted.",
         type: 'alert',
         status: 'success',
       });
@@ -202,7 +208,7 @@ function TeachersDashboard() {
       setAlertConfig({
         isOpen: true,
         title: "Error",
-        message: "Error: Classroom not deleted.",
+        message: "Failed to delete classroom.",
         type: 'alert',
         status: 'warning',
       });
@@ -213,7 +219,7 @@ function TeachersDashboard() {
     setAlertConfig({
       isOpen: true,
       title: "Delete Quiz?",
-      message: "Are you sure you want to delete quiz?",
+      message: "Are you sure you want to delete this quiz?",
       type: 'confirm',
       status: 'warning',
       onConfirm: () => executeDeleteQuiz(quizId)
@@ -223,14 +229,13 @@ function TeachersDashboard() {
   const executeDeleteQuiz = async (quizId) => {
     const JWT_TOKEN = localStorage.getItem('token');
     const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
-
     try {
       await axios.delete(`${API_URL}/api/quiz/${quizId}`, apiConfig);
       setQuizzes(prevQuizzes => prevQuizzes.filter(quiz => quiz._id !== quizId));
       setAlertConfig({
         isOpen: true,
         title: "Deleted!",
-        message: "Quiz deletd successfully.",
+        message: "Quiz successfully deleted.",
         type: 'alert',
         status: 'success',
       });
@@ -239,7 +244,7 @@ function TeachersDashboard() {
       setAlertConfig({
         isOpen: true,
         title: "Error",
-        message: "Error: Quiz not deleted.",
+        message: "Failed to delete quiz.",
         type: 'alert',
         status: 'warning',
       });
@@ -251,9 +256,8 @@ function TeachersDashboard() {
   };
   
   const renderContent = () => {
-    // ... (renderContent logic same) ...
     if (loading && classrooms.length === 0) {
-      return <p className="text-center text-gray-500">Dashboard Loading...</p>;
+      return <p className="text-center text-gray-500">Loading your dashboard...</p>;
     }
     if (error && classrooms.length === 0) { 
       return <p className="text-center text-red-500">{error}</p>;
@@ -263,12 +267,15 @@ function TeachersDashboard() {
         <section className="mb-12">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-3xl font-semibold text-gray-800">Your classrooms</h2>
-            <button 
-              onClick={() => setIsModalOpen(true)}
+            
+            {/* --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 --- */}
+            {/* Button ko <Link> mein badal diya */}
+            <Link 
+              to="/create-classroom"
               className="bg-blue-600 text-white px-5 py-3 rounded-lg font-medium hover:bg-blue-700 shadow-md"
             >
               Create new classroom
-            </button>
+            </Link>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {classrooms.length > 0 ? (
@@ -281,7 +288,7 @@ function TeachersDashboard() {
                 />
               ))
             ) : (
-              !loading && <p>No classroom created.</p>
+              !loading && <p>You haven't created any classrooms yet.</p>
             )}
           </div>
         </section>
@@ -306,7 +313,7 @@ function TeachersDashboard() {
                   />
                 ))
               ) : (
-                !loading && !error && <p>No quiz created.</p>
+                !loading && !error && <p>You haven't created any quizzes yet.</p>
               )}
           </div>
         </section>
@@ -314,23 +321,16 @@ function TeachersDashboard() {
     );
   };
   
-  // --- Main Return ---
   return (
     <main className="flex-1 p-8 md:p-12">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900">Teachers dashboard</h1>
-        
-        {/* --- 3. NAAM YAHAN UPDATE KIYA --- */}
         <p className="text-lg text-gray-600">Welcome back, {userName}</p>
-        
       </div>
       {renderContent()}
 
-      <CreateClassroomModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onClassroomCreated={fetchDashboardData} 
-      />
+      {/* --- CreateClassroomModal HATA DIYA --- */}
+      
       <AlertModal 
         isOpen={alertConfig.isOpen}
         onClose={closeAlertModal}
