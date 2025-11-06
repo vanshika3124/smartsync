@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { FiList, FiClock, FiUsers, FiCopy, FiArrowUpRight, FiUpload, FiPlus, FiFileText, FiTrash, FiAward, FiBarChart2, FiPieChart } from 'react-icons/fi';
+import { 
+  FiList, FiClock, FiUsers, FiCopy, FiArrowUpRight, 
+  FiUpload, FiFileText, FiTrash, FiAward, FiTrendingUp 
+} from 'react-icons/fi';
 import UploadNotesModal from '../components/UploadNotesModal'; 
 import AlertModal from '../components/AlertModal';
 
-// ... (QuizCard aur NoteItem helper components same rahenge) ...
-// --- Helper: Quiz Card ---
+// --- Helper: Quiz Card (Includes alignment and delete fix) ---
 const QuizCard = ({ quiz, onDelete }) => (
   <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
     <div className="absolute top-6 right-6 flex items-center gap-2">
@@ -44,6 +46,7 @@ const QuizCard = ({ quiz, onDelete }) => (
     </div>
   </div>
 );
+
 // --- Helper: Note List Item ---
 const NoteItem = ({ note }) => (
   <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white">
@@ -55,27 +58,49 @@ const NoteItem = ({ note }) => (
   </div>
 );
 
+// --- Helper: Leaderboard Item ---
+const LeaderboardItem = ({ student, rank }) => (
+  <li className="flex items-center justify-between p-3 border-b">
+    <div className="flex items-center gap-3">
+      <span className="font-bold text-lg text-gray-700">#{rank + 1}</span>
+      <span className="font-medium text-gray-900">{student.name}</span>
+    </div>
+    <span className="font-semibold text-blue-600">{student.score} pts</span>
+  </li>
+);
 
-// --- MUKHYA Classroom Page Component ---
+
+// --- Main Classroom Page Component ---
 function ClassroomPage() {
   const [classroom, setClassroom] = useState(null);
   const [quizzes, setQuizzes] = useState([]);
   const [notes, setNotes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [leaderboardData, setLeaderboardData] = useState([]);
   
-  // --- 🚀🚀 YEH HAI ASLI FIX (Alag Alag Errors) 🚀🚀 ---
+  // Loading & Error states
+  const [loadingClass, setLoadingClass] = useState(true);
+  const [loadingQuizzes, setLoadingQuizzes] = useState(true);
+  const [loadingNotes, setLoadingNotes] = useState(true);
+  const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
   const [classError, setClassError] = useState(null);
   const [quizError, setQuizError] = useState(null);
   const [notesError, setNotesError] = useState(null);
-
+  const [leaderboardError, setLeaderboardError] = useState(null);
+  
+  // Modals & Navigation
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
   const { classroomId } = useParams();
   const navigate = useNavigate();
 
+  // ML Feature States
+  const [predictionStudentId, setPredictionStudentId] = useState('');
+  const [predictedScore, setPredictedScore] = useState(null);
+  const [predictionLoading, setPredictionLoading] = useState(false);
+  const [predictionError, setPredictionError] = useState(null);
+
   const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
   const JWT_TOKEN = localStorage.getItem('token');
-  const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
-
+  
   const [alertConfig, setAlertConfig] = useState({
     isOpen: false,
     title: '',
@@ -85,98 +110,164 @@ function ClassroomPage() {
     onConfirm: null,
   });
 
-  // --- Data Fetch Logic (UPDATED) ---
-  const fetchClassroomData = useCallback(async () => {
-    setLoading(true);
-    setClassError(null);
-    setQuizError(null);
-    setNotesError(null);
+  // --- Data Fetching Functions ---
 
-    // --- 🚀🚀 FIX: API Calls ko alag-alag try...catch mein daala ---
-    try {
-      // 1. Fetch classroom details
-      const classroomRes = await axios.get(`${API_URL}/api/classroom/my`, apiConfig);
-      let foundClass;
-      if (Array.isArray(classroomRes.data)) {
-        foundClass = classroomRes.data.find(c => c._id === classroomId);
-      } else if (classroomRes.data && Array.isArray(classroomRes.data.teacher)) {
-        foundClass = classroomRes.data.teacher.find(c => c._id === classroomId);
+  // 1. Fetch Class Details (runs once)
+  useEffect(() => {
+    const fetchClassDetails = async () => {
+      if (!JWT_TOKEN || JWT_TOKEN === 'undefined' || JWT_TOKEN === 'null') {
+        navigate('/login'); 
+        return; 
       }
-      if (!foundClass) throw new Error("Classroom not found");
-      setClassroom(foundClass);
-    } catch (err) {
-      console.error("Error fetching classroom details:", err);
-      setClassError("Classroom details load nahi huin.");
-      setLoading(false); // Agar class hi nahi mili toh stop
-      return; 
-    }
+      const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
+      
+      setLoadingClass(true);
+      try {
+        const classroomRes = await axios.get(`${API_URL}/api/classroom/my`, apiConfig);
+        let foundClass;
+        if (Array.isArray(classroomRes.data)) {
+          foundClass = classroomRes.data.find(c => c._id === classroomId);
+        } else if (classroomRes.data && Array.isArray(classroomRes.data.teacher)) {
+          foundClass = classroomRes.data.teacher.find(c => c._id === classroomId);
+        }
+        if (!foundClass) throw new Error("Classroom not found");
+        setClassroom(foundClass);
+        setClassError(null);
+      } catch (err) {
+        console.error("Error fetching classroom details:", err);
+        setClassError("Failed to load classroom details.");
+      } finally {
+        setLoadingClass(false);
+      }
+    };
+    fetchClassDetails();
+  }, [classroomId, API_URL, JWT_TOKEN, navigate]);
 
+  // 2. Fetch Quizzes
+  const fetchQuizzes = useCallback(async () => {
+    if (!JWT_TOKEN) return;
+    const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
+    setLoadingQuizzes(true);
+    setQuizError(null);
     try {
-      // 2. Fetch Quizzes for THIS classroom
       const quizRes = await axios.get(`${API_URL}/api/quiz/classroom/${classroomId}`, apiConfig);
       setQuizzes(quizRes.data || []);
     } catch (err) {
       console.error("Error fetching quizzes:", err);
-      setQuizError("Quizzes load nahi hue (API Error)");
+      setQuizError("Failed to load quizzes (API Error)");
+    } finally {
+      setLoadingQuizzes(false);
     }
-    
+  }, [classroomId, API_URL, JWT_TOKEN]);
+
+  // 3. Fetch Notes
+  const fetchNotes = useCallback(async () => {
+    if (!JWT_TOKEN) return;
+    const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
+    setLoadingNotes(true);
+    setNotesError(null);
     try {
-      // 3. Fetch Notes for THIS classroom
       const notesRes = await axios.get(`${API_URL}/api/notes/${classroomId}`, apiConfig);
       setNotes(notesRes.data || []);
     } catch (err) {
       console.error("Error fetching notes:", err);
-      setNotesError("Notes load nahi hue (API Error)");
+      setNotesError("Failed to load notes (API Error)");
+    } finally {
+      setLoadingNotes(false);
     }
-    // --- End of Fix ---
+  }, [classroomId, API_URL, JWT_TOKEN]);
 
-    setLoading(false); // Sab kuch try ho gaya
-  }, [classroomId, API_URL, JWT_TOKEN]); // Removed apiConfig
+  // 4. Fetch Smart Leaderboard
+  const fetchLeaderboard = useCallback(async () => {
+    if (!JWT_TOKEN) return;
+    setLoadingLeaderboard(true);
+    setLeaderboardError(null);
+    try {
+      // TODO: Confirm this endpoint and auth method with ML team
+      const mlApiUrl = "https://team-task-leaderboard.onrender.com";
+      // Assuming it needs a classroomId and token
+      const response = await axios.post(`${mlApiUrl}/leaderboard`, 
+        { classroomId: classroomId },
+        { headers: { Authorization: `Bearer ${JWT_TOKEN}` } } // Or maybe a different auth
+      );
+      setLeaderboardData(response.data.leaderboard || []);
+    } catch (err) {
+      console.error("Error fetching leaderboard:", err);
+      setLeaderboardError("Failed to load Smart Leaderboard (API Error)");
+    } finally {
+      setLoadingLeaderboard(false);
+    }
+  }, [classroomId, JWT_TOKEN]);
 
+  // Load quizzes, notes, and leaderboard once classroom details are fetched
   useEffect(() => {
-    fetchClassroomData();
-  }, [fetchClassroomData]);
+    if (classroom) {
+      fetchQuizzes();
+      fetchNotes();
+      fetchLeaderboard();
+    }
+  }, [classroom, fetchQuizzes, fetchNotes, fetchLeaderboard]);
 
-  // ... (Delete logic same rahegi) ...
+  // --- Action Functions ---
+
+  // Delete Quiz Logic
   const handleDeleteQuiz = (quizId) => {
     setAlertConfig({
       isOpen: true,
       title: "Delete Quiz?",
-      message: "Pakka yeh quiz delete karna hai?",
+      message: "Are you sure you want to delete this quiz?",
       type: 'confirm',
       status: 'warning',
       onConfirm: () => executeDeleteQuiz(quizId)
     });
   };
   const executeDeleteQuiz = async (quizId) => {
+    const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
     try {
       await axios.delete(`${API_URL}/api/quiz/${quizId}`, apiConfig);
       setQuizzes(prevQuizzes => prevQuizzes.filter(quiz => quiz._id !== quizId));
-      setAlertConfig({
-        isOpen: true,
-        title: "Deleted!",
-        message: "Quiz successfully delete ho gaya.",
-        type: 'alert',
-        status: 'success',
-      });
+      setAlertConfig({ isOpen: true, title: "Deleted!", message: "Quiz deleted successfully.", type: 'alert', status: 'success' });
     } catch (err) {
       console.error("Error deleting quiz:", err);
-      setAlertConfig({
-        isOpen: true,
-        title: "Error",
-        message: "Error: Quiz delete nahi hua.",
-        type: 'alert',
-        status: 'warning',
-      });
+      setAlertConfig({ isOpen: true, title: "Error", message: "Failed to delete quiz.", type: 'alert', status: 'warning' });
     }
   };
+  
+  // Predict Score Logic
+  const handlePredictScore = async (e) => {
+    e.preventDefault();
+    if (!predictionStudentId) {
+      setPredictionError("Please select a student.");
+      return;
+    }
+    setPredictionLoading(true);
+    setPredictionError(null);
+    setPredictedScore(null);
+    
+    try {
+      // TODO: Confirm this endpoint, body, and auth with ML team
+      const mlApiUrl = "https://team-task-future-score.onrender.com";
+      // Assuming it's a POST request
+      const response = await axios.post(`${mlApiUrl}/predict`, {
+        studentId: predictionStudentId,
+        classroomId: classroomId 
+      });
+      
+      setPredictedScore(response.data.predictedScore);
+    } catch (err) {
+      console.error("Error predicting score:", err);
+      setPredictionError("Failed to predict score (API Error)");
+    } finally {
+      setPredictionLoading(false);
+    }
+  };
+  
   const closeAlertModal = () => {
     setAlertConfig({ isOpen: false, title: '', message: '' });
   };
 
-
   // --- Render Logic ---
-  if (loading && !classroom) return <p className="p-10 text-center">Loading classroom...</p>;
+  if (loadingClass) return <p className="p-10 text-center">Loading classroom...</p>;
   if (classError) return <p className="p-10 text-center text-red-500">{classError}</p>;
   if (!classroom) return <p className="p-10 text-center text-red-500">Classroom not found.</p>;
 
@@ -186,9 +277,10 @@ function ClassroomPage() {
         
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900">Teachers dashboard</h1>
-          <p className="text-lg text-gray-600">Welcome back, Mrs. Anjali Singh</p>
+          <p className="text-lg text-gray-600">Welcome back, {JSON.parse(localStorage.getItem('user'))?.name || 'Teacher'}</p>
         </div>
         
+        {/* Classroom Info Card */}
         <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 mb-8">
           <div className="flex flex-wrap justify-between items-center">
             <div>
@@ -216,58 +308,96 @@ function ClassroomPage() {
           </div>
         </div>
 
+        {/* --- ML FEATURE: Future Score Predictor (Interactive) --- */}
         <section className="mb-8">
-          <h2 className="text-3xl font-semibold text-gray-800 mb-6">Performance based on recent quiz</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-2xl shadow-lg">
-              <h3 className="font-semibold mb-4 flex items-center gap-2"><FiBarChart2 /> Student Performance Distribution</h3>
-              <p className="text-gray-500">(ML Chart yahan aayega)</p>
-            </div>
-            <div className="bg-white p-6 rounded-2xl shadow-lg">
-              <h3 className="font-semibold mb-4 flex items-center gap-2"><FiPieChart /> Topic Strength Analysis</h3>
-              <p className="text-gray-500">(ML Chart yahan aayega)</p>
-            </div>
-          </div>
-          <div className="flex justify-center gap-4 mt-6">
-            <button className="text-green-600 font-semibold py-3 px-6 rounded-lg hover:bg-green-50">
-              See full analysis ↗
-            </button>
+          <h2 className="text-3xl font-semibold text-gray-800 mb-6">Future Score Predictor</h2>
+          <div className="bg-white p-6 rounded-2xl shadow-lg">
+            <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <FiTrendingUp className="text-blue-500" />
+              Predict a Student's Future Score
+            </h3>
+            
+            <form onSubmit={handlePredictScore} className="space-y-4">
+              <div>
+                <label htmlFor="student-select" className="block text-sm font-medium text-gray-700">Select a student</label>
+                <select 
+                  id="student-select"
+                  value={predictionStudentId}
+                  onChange={(e) => setPredictionStudentId(e.target.value)}
+                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
+                >
+                  <option value="">-- Select --</option>
+                  {/* Assuming classroom.students is an array of objects like { _id, name } */}
+                  {classroom.students && classroom.students.map(student => (
+                    <option key={student._id} value={student._id}>{student.name}</option>
+                  ))}
+                </select>
+              </div>
+              <button 
+                type="submit"
+                disabled={predictionLoading}
+                className="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400"
+              >
+                {predictionLoading ? "Predicting..." : "Predict Score"}
+              </button>
+              
+              {/* Prediction Result */}
+              {predictionLoading && <p className="text-gray-600">Loading prediction...</p>}
+              {predictionError && <p className="text-red-500">{predictionError}</p>}
+              {predictedScore !== null && (
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <p className="font-semibold text-blue-800">Predicted Score: <span className="text-2xl">{predictedScore}%</span></p>
+                </div>
+              )}
+            </form>
           </div>
         </section>
 
+        {/* --- ML FEATURE: Smart Leaderboard (Interactive) --- */}
         <section className="mb-8">
           <h2 className="text-3xl font-semibold text-gray-800 mb-6">Smart Leaderboard</h2>
           <div className="bg-white p-6 rounded-2xl shadow-lg">
-             <div className="flex items-center gap-2">
+             <div className="flex items-center gap-2 mb-4">
                 <FiAward className="text-yellow-500" />
-                <h3 className="font-semibold">Leaderboard (Coming Soon)</h3>
+                <h3 className="font-semibold">Classroom Leaderboard</h3>
              </div>
-             <p className="text-gray-500 mt-2">Yahan ML-powered leaderboard dikhega...</p>
+             {loadingLeaderboard && <p>Loading leaderboard...</p>}
+             {leaderboardError && <p className="text-red-500">{leaderboardError}</p>}
+             {!loadingLeaderboard && !leaderboardError && (
+               <ol className="space-y-2">
+                 {leaderboardData.length > 0 ? (
+                   leaderboardData.map((student, index) => (
+                     <LeaderboardItem key={student._id || index} student={student} rank={index} />
+                   ))
+                 ) : (
+                   <p className="text-gray-500">No leaderboard data available yet.</p>
+                 )}
+               </ol>
+             )}
           </div>
         </section>
 
-        {/* Quizzes List (UPDATED) */}
+        {/* Quizzes List */}
         <section className="mb-12">
           <h2 className="text-3xl font-semibold text-gray-800 mb-6">Quizzes</h2>
-          
-          {/* --- 🚀🚀 FIX: Quiz ka apna error message --- */}
+          {loadingQuizzes && <p className="text-gray-500">Loading quizzes...</p>}
           {quizError && <p className="text-red-500">{quizError}</p>}
-          
           <div className="space-y-6">
-            {quizzes.length > 0 ? (
+            {!loadingQuizzes && !quizError && quizzes.length > 0 && (
               quizzes.map(quiz => 
                 <QuizCard 
                   key={quiz._id} 
                   quiz={quiz} 
                   onDelete={handleDeleteQuiz} 
                 />)
-            ) : (
-              !loading && !quizError && <p>Is classroom mein abhi koi quiz nahi hai.</p>
+            )}
+            {!loadingQuizzes && !quizError && quizzes.length === 0 && (
+              <p>No quizzes created for this class yet.</p>
             )}
           </div>
         </section>
 
-        {/* Notes List (UPDATED) */}
+        {/* Notes List */}
         <section>
           <h2 className="text-3xl font-semibold text-gray-800 mb-6">Share notes with {classroom.name}</h2>
           <div className="bg-white p-6 rounded-2xl shadow-lg">
@@ -278,17 +408,16 @@ function ClassroomPage() {
               <div className="bg-blue-100 text-blue-600 rounded-full p-3">
                 <FiUpload className="w-6 h-6" />
               </div>
-              <span className="mt-4 font-semibold text-gray-700">Upload pdf file</span>
+              <span className="mt-4 font-semibold text-gray-700">Upload PDF file</span>
             </button>
-            
-            {/* --- 🚀🚀 FIX: Notes ka apna error message --- */}
+            {loadingNotes && <p className="text-gray-500 mt-4">Loading notes...</p>}
             {notesError && <p className="text-red-500 mt-4">{notesError}</p>}
-
             <div className="space-y-4 mt-6">
-              {notes.length > 0 ? (
+              {!loadingNotes && !notesError && notes.length > 0 && (
                 notes.map(note => <NoteItem key={note._id} note={note} />)
-              ) : (
-                !loading && !notesError && <p className="text-center text-gray-500">Abhi koi notes upload nahi kiye hain.</p>
+              )}
+              {!loadingNotes && !notesError && notes.length === 0 && (
+                <p className="text-center text-gray-500">No notes uploaded for this class yet.</p>
               )}
             </div>
           </div>
@@ -296,11 +425,12 @@ function ClassroomPage() {
 
       </main>
 
+      {/* Modals */}
       <UploadNotesModal 
         isOpen={isNotesModalOpen}
         onClose={() => setIsNotesModalOpen(false)}
         classroomId={classroomId}
-        onNoteUploaded={fetchClassroomData} 
+        onNoteUploaded={fetchNotes} 
       />
       <AlertModal 
         isOpen={alertConfig.isOpen}

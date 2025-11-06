@@ -105,7 +105,7 @@ function TeachersDashboard() {
         setUserName('Teacher'); // Fallback
       }
     } catch (e) {
-      console.error("User details nahi milin", e);
+      console.error("User details not found", e);
       setUserName('Teacher'); // Fallback
     }
   }, []); // Empty array = sirf ek baar chalao
@@ -115,7 +115,7 @@ function TeachersDashboard() {
     // ... (poora fetchDashboardData function same rahega) ...
     const JWT_TOKEN = localStorage.getItem('token'); 
     if (!JWT_TOKEN || JWT_TOKEN === 'undefined' || JWT_TOKEN === 'null') {
-      setError("Aap logged in nahi hain. Please login.");
+      setError("You are not logged in. Please login.");
       setLoading(false);
       navigate('/login'); 
       return; 
@@ -158,7 +158,7 @@ function TeachersDashboard() {
       }
     } catch (quizErr) {
       console.error("Error fetching recent quizzes:", quizErr);
-      setError("Classrooms load ho gaye, par recent quizzes nahi hue. (API Error)");
+      setError("Classrooms loaded, but recent quizzes not. (API Error)");
       setQuizzes([]);
     }
     setLoading(false);
@@ -177,7 +177,7 @@ function TeachersDashboard() {
     setAlertConfig({
       isOpen: true,
       title: "Delete Classroom?",
-      message: "Pakka delete karna hai? Is classroom ka saara data (quiz, notes) delete ho jaayega.",
+      message: "Delete Classroom? All data of the classroom will be deleted.",
       type: 'confirm',
       status: 'warning',
       onConfirm: () => executeDeleteClassroom(classroomId)
@@ -193,7 +193,7 @@ function TeachersDashboard() {
       setAlertConfig({
         isOpen: true,
         title: "Deleted!",
-        message: "Classroom successfully delete ho gayi.",
+        message: "Deleted Successfully.",
         type: 'alert',
         status: 'success',
       });
@@ -202,7 +202,7 @@ function TeachersDashboard() {
       setAlertConfig({
         isOpen: true,
         title: "Error",
-        message: "Error: Classroom delete nahi hui.",
+        message: "Error: Classroom not deleted.",
         type: 'alert',
         status: 'warning',
       });
@@ -213,7 +213,7 @@ function TeachersDashboard() {
     setAlertConfig({
       isOpen: true,
       title: "Delete Quiz?",
-      message: "Pakka yeh quiz delete karna hai?",
+      message: "Are you sure you want to delete quiz?",
       type: 'confirm',
       status: 'warning',
       onConfirm: () => executeDeleteQuiz(quizId)
@@ -230,7 +230,7 @@ function TeachersDashboard() {
       setAlertConfig({
         isOpen: true,
         title: "Deleted!",
-        message: "Quiz successfully delete ho gaya.",
+        message: "Quiz deletd successfully.",
         type: 'alert',
         status: 'success',
       });
@@ -239,7 +239,7 @@ function TeachersDashboard() {
       setAlertConfig({
         isOpen: true,
         title: "Error",
-        message: "Error: Quiz delete nahi hua.",
+        message: "Error: Quiz not deleted.",
         type: 'alert',
         status: 'warning',
       });
@@ -253,7 +253,7 @@ function TeachersDashboard() {
   const renderContent = () => {
     // ... (renderContent logic same) ...
     if (loading && classrooms.length === 0) {
-      return <p className="text-center text-gray-500">Aapka dashboard load ho raha hai...</p>;
+      return <p className="text-center text-gray-500">Dashboard Loading...</p>;
     }
     if (error && classrooms.length === 0) { 
       return <p className="text-center text-red-500">{error}</p>;
@@ -281,7 +281,7 @@ function TeachersDashboard() {
                 />
               ))
             ) : (
-              !loading && <p>Aapne koi classroom nahi banayi hai.</p>
+              !loading && <p>No classroom created.</p>
             )}
           </div>
         </section>
@@ -306,7 +306,7 @@ function TeachersDashboard() {
                   />
                 ))
               ) : (
-                !loading && !error && <p>Aapne abhi koi quiz nahi banaya hai.</p>
+                !loading && !error && <p>No quiz created.</p>
               )}
           </div>
         </section>

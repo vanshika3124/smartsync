@@ -1,35 +1,31 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // 1. Auth context
+import { useAuth } from '../context/AuthContext'; 
 import { FaBars, FaTimes } from 'react-icons/fa';
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  
-  // --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
-  // Ab hum 'isLoggedIn' state seedha context se le rahe hain
   const { isLoggedIn, logout } = useAuth(); 
   const navigate = useNavigate();
   const location = useLocation(); 
 
-  // --- 'useState' aur 'useEffect' waali lines HATA DI GAYI HAIN ---
-  // (Kyunki ab context state ko handle kar raha hai)
-
   const handleLogout = () => {
     if (typeof logout === 'function') {
-      logout(); // 1. Context ki state ko 'false' karta hai
+      logout(); 
     }
-    localStorage.removeItem('token'); // 2. Token delete karta hai
-    localStorage.removeItem('user'); // 3. User delete karta hai
+    localStorage.removeItem('token'); 
+    localStorage.removeItem('user'); 
     navigate('/'); 
     setIsOpen(false);
   };
-  // --- End of Fix ---
 
+  // --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
+  // Updated links based on your request
   const dashboardLink = isLoggedIn ? "/dashboard" : "/login";
-  const classroomLink = isLoggedIn ? "/classroom" : "/login"; 
-  const quizLink = isLoggedIn ? "/quiz" : "/login";
+  const classroomLink = isLoggedIn ? "/create-classroom" : "/login"; // <-- UPDATED
+  const quizLink = isLoggedIn ? "/create-quiz" : "/login"; // <-- UPDATED
   const faqsLink = "/faqs";
+  // --- End of Fix ---
 
   const isDashboardActive = location.pathname.startsWith('/dashboard');
 
@@ -51,7 +47,6 @@ function Navbar() {
           <Link to={quizLink} className="text-gray-700 font-medium hover:text-blue-600">Quiz</Link>
           <Link to={faqsLink} className="text-gray-700 font-medium hover:text-blue-600">FAQs</Link>
           
-          {/* Ab yeh 100% sahi chalega */}
           {isLoggedIn ? (
             <button 
               onClick={handleLogout}
