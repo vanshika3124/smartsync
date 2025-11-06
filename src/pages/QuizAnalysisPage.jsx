@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { FiUsers, FiCheckCircle, FiTrendingUp, FiClock, FiChevronDown, FiExternalLink } from 'react-icons/fi';
+// Import chart components
 import { Bar, Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -14,7 +15,7 @@ import {
   ArcElement,
 } from 'chart.js';
 
-// ... (Register Chart.js components) ...
+// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -25,7 +26,8 @@ ChartJS.register(
   ArcElement
 );
 
-// ... (StatCard, TopPerformerItem, StudentInsightItem helper components) ...
+// --- Helper Components ---
+
 // 1. Stat Card
 const StatCard = ({ title, value, icon, iconBg }) => (
   <div className="bg-white p-6 rounded-2xl shadow-lg">
@@ -40,6 +42,7 @@ const StatCard = ({ title, value, icon, iconBg }) => (
     </div>
   </div>
 );
+
 // 2. Top Performer Item
 const TopPerformerItem = ({ rank, submission }) => (
   <div className="flex items-center justify-between p-4 border-b border-gray-100">
@@ -56,41 +59,10 @@ const TopPerformerItem = ({ rank, submission }) => (
     </div>
   </div>
 );
-// 3. AI Student Insight Item (Placeholder)
-const StudentInsightItem = ({ name, avgScore, strongTopics, weakTopics, status }) => {
-  const statusColor = status === 'Improving' ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50';
-  return (
-    <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h4 className="text-xl font-semibold">{name}</h4>
-          <p className="text-sm text-gray-500">{avgScore}% average</p>
-        </div>
-        <span className={`text-sm font-medium px-3 py-1 rounded-full ${statusColor}`}>{status}</span>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <p className="font-semibold text-gray-700 mb-2">Strong Topics</p>
-          <div className="flex flex-wrap gap-2">
-            {strongTopics.map(topic => (
-              <span key={topic} className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full">{topic}</span>
-            ))}
-          </div>
-        </div>
-        <div>
-          <p className="font-semibold text-gray-700 mb-2">Needs Improvement</p>
-          <div className="flex flex-wrap gap-2">
-            {weakTopics.map(topic => (
-              <span key={topic} className="text-sm bg-red-100 text-red-800 px-3 py-1 rounded-full">{topic}</span>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
-// ... (Chart Data Placeholders) ...
+// --- 🚀🚀 AI INSIGHTS COMPONENT REMOVED ---
+
+// --- Chart Data (Placeholders) ---
 const pieChartData = {
   labels: ['Unit 1', 'Unit 2', 'Unit 3', 'Unit 4', 'Unit 5'],
   datasets: [
@@ -106,7 +78,6 @@ const chartOptions = { plugins: { legend: { position: 'bottom' } } };
 
 // --- Main Page Component ---
 function QuizAnalysisPage() {
-  // ... (All logic, state, useEffect, etc. remains the same) ...
   const { quizId } = useParams();
   const [submissions, setSubmissions] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
@@ -171,12 +142,8 @@ function QuizAnalysisPage() {
   if (error) return <main className="flex-1 p-10 text-center text-red-500"><p>{error}</p></main>;
 
   const topPerformers = submissions.slice(0, 6); 
-  const aiInsights = [
-     { name: 'Aarav', avgScore: 87.5, strongTopics: ['Unit 1', 'Unit 3'], weakTopics: ['Unit 2'], status: 'Improving' },
-     { name: 'Diya', avgScore: 75.2, strongTopics: ['Unit 1', 'Unit 5'], weakTopics: ['Unit 3', 'Unit 4'], status: 'Stable' },
-  ];
+  // --- 🚀🚀 AI INSIGHTS DATA ARRAY REMOVED ---
 
-  // --- 🚀🚀 FIX: REMOVED <> wrapper and <footer> 🚀🚀 ---
   return (
     <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#F0F7FF' }}>
       
@@ -250,25 +217,9 @@ function QuizAnalysisPage() {
         </div>
       </div>
 
-      {/* AI Insights */}
-      <div>
-        <h3 className="font-semibold text-xl mb-4">AI-Powered Student Insights</h3>
-        <div className="space-y-6">
-          {aiInsights.map((student, index) => (
-            <StudentInsightItem 
-              key={index}
-              name={student.name}
-              avgScore={student.avgScore}
-              strongTopics={student.strongTopics}
-              weakTopics={student.weakTopics}
-              status={student.status}
-            />
-          ))}
-        </div>
-      </div>
+      {/* --- 🚀🚀 AI INSIGHTS SECTION REMOVED --- */}
 
     </main>
-    // --- 🚀🚀 FOOTER REMOVED FROM HERE 🚀🚀 ---
   );
 }
 

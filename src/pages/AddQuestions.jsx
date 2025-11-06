@@ -148,7 +148,7 @@ function AddQuestions() {
               </select>
             </div>
             <div>
-              <label htmlFor="marks" className="block text-md font-medium text-gray-700 mb-2">Points</label>
+              <label htmlFor="marks" className="block text-md font-medium text-gray-700 mb-2">Score</label>
               <input 
                 type="number" id="marks" name="marks"
                 value={formData.marks}
