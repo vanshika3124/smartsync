@@ -128,16 +128,12 @@ function ClassroomPage() {
     setLoadingQuizzes(true);
     setQuizError(null);
     try {
-      // --- 🚀🚀 YEH HAI ASLI FIX (Postman ke hisab se) 🚀🚀 ---
-      // 'axios.post' ko 'axios.get' se badal diya hai
       const quizRes = await axios.get(`${API_URL}/api/quiz/classroom/${classroomId}`, apiConfig);
-      // --- End of Fix ---
-      
-      // Response { success: true, quizzes: [...] } hai
+      // Response { success: true, quizzes: [...] }
       if (quizRes.data && Array.isArray(quizRes.data.quizzes)) {
           setQuizzes(quizRes.data.quizzes);
       } else {
-          setQuizzes([]); // Fallback
+          setQuizzes([]);
       }
     } catch (err) {
       console.error("Error fetching quizzes:", err);
@@ -155,8 +151,15 @@ function ClassroomPage() {
     setLoadingNotes(true);
     setNotesError(null);
     try {
+      // --- 🚀🚀 YEH HAI ASLI FIX (Postman ke hisab se) 🚀🚀 ---
       const notesRes = await axios.get(`${API_URL}/api/notes/${classroomId}`, apiConfig);
-      setNotes(notesRes.data || []);
+      // Response { success: true, notes: [...] }
+      if (notesRes.data && Array.isArray(notesRes.data.notes)) {
+        setNotes(notesRes.data.notes);
+      } else {
+        setNotes([]);
+      }
+      // --- End of Fix ---
     } catch (err) {
       console.error("Error fetching notes:", err);
       setNotesError("Failed to load notes (API Error)");
