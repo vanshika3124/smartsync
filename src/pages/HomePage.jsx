@@ -8,15 +8,9 @@ import {
   FaChevronUp,
   FaChevronDown,
   FaArrowRight,
-  FaLinkedinIn,
-  FaTwitter,
-  FaFacebookF,
-  FaYoutube,
-  FaInstagram
 } from 'react-icons/fa';
 
 // --- 2. Hero Section Component ---
-// (No change, uses photo images)
 const HeroSection = () => {
   const linkTo = "/login"; 
 
@@ -75,7 +69,6 @@ const HeroSection = () => {
 };
 
 // --- 3. Start Teaching Section Component ---
-// (No change, uses photo images)
 const StartTeachingSection = () => {
   const linkTo = "/login"; 
 
@@ -103,7 +96,6 @@ const StartTeachingSection = () => {
 };
 
 // --- 4. How to Teach Section Component ---
-// (No change, uses photo image)
 const HowToTeachSection = () => {
   const linkTo = "/login"; 
   const steps = [
@@ -203,7 +195,6 @@ const Stars = ({ count = 5 }) => {
 const ReviewCard = ({ name, title, text, img, time, stars, borderColor }) => (
   <div className="bg-white p-6 rounded-2xl shadow-lg min-w-[350px] max-w-sm mx-4 flex-shrink-0"> 
     <div className="flex items-center mb-4">
-      {/* Avatar image hai, isse nahi badla */}
       <img 
         src={img} 
         alt={name} 
@@ -220,7 +211,6 @@ const ReviewCard = ({ name, title, text, img, time, stars, borderColor }) => (
   </div>
 );
 
-// --- REVIEWS SECTION (ICONS UPDATED) ---
 function ReviewsSection() {
   const [current, setCurrent] = useState(0);
   const cardOffset = 350 + 32; 
@@ -267,7 +257,6 @@ function ReviewsSection() {
             </div>
             
             <div className="flex justify-center mt-8 gap-4">
-              {/* --- YAHAN ICONS USE KIYE --- */}
               <button 
                 onClick={prevReview} 
                 className="bg-white rounded-full p-4 shadow-md hover:bg-gray-100 transition-colors"
@@ -306,7 +295,6 @@ const faqsData = [
   },
 ];
 
-// --- FAQ ITEM (ICONS UPDATED) ---
 const FaqItem = ({ faq, index, openIndex, toggleFAQ }) => {
   const isOpen = index === openIndex;
   
@@ -317,7 +305,6 @@ const FaqItem = ({ faq, index, openIndex, toggleFAQ }) => {
         className="w-full flex justify-between items-center py-6 text-left"
       >
         <span className="font-semibold text-lg text-gray-900">{faq.q}</span>
-        {/* --- YAHAN ICONS USE KIYE --- */}
         {isOpen ? 
           <FaChevronUp className="w-5 h-5 text-blue-600" /> : 
           <FaChevronDown className="w-5 h-5 text-gray-400" />
@@ -330,7 +317,6 @@ const FaqItem = ({ faq, index, openIndex, toggleFAQ }) => {
   );
 };
 
-// --- FAQ SECTION (ICONS UPDATED) ---
 function FaqSection() {
   const [openIndex, setOpenIndex] = useState(0); 
 
@@ -358,7 +344,6 @@ function FaqSection() {
           className="mt-12 inline-block bg-teal-500 text-white px-8 py-3 rounded-full font-semibold text-lg hover:bg-teal-600 transition-colors shadow-lg"
         >
           See all FAQs
-          {/* --- YAHAN ICON USE KIYA --- */}
           <FaArrowRight className="inline-block w-4 h-4 ml-2" />
         </Link>
       </div>
@@ -367,7 +352,6 @@ function FaqSection() {
 }
 
 // --- 7. Benefits and Stats Section Component ---
-// (No change, uses photo images)
 const BenefitsAndStatsSection = () => {
   const benefits = [
     { title: "Creates engaging environment", icon: "/photos/benefit-1.png" },
@@ -412,85 +396,10 @@ const BenefitsAndStatsSection = () => {
   );
 };
 
-// --- 8. Footer Component (ICONS UPDATED) ---
-const Footer = () => {
-  const linkTo = "/login"; 
+// --- 8. Footer Component (REMOVED) ---
+// ...
 
-  const quickLinks = [
-    { title: "Teachers dashboard", to: linkTo },
-    { title: "Classroom", to: linkTo },
-    { title: "Create a quiz", to: linkTo },
-    { title: "Faqs", to: linkTo },
-    { title: "Login", to: linkTo },
-    { title: "Terms and Conditions", to: linkTo },
-    { title: "Signup", to: linkTo },
-  ];
-
-  return (
-    <footer className="bg-[#0F174B] text-gray-300 py-16 px-6 md:px-12 rounded-t-3xl">
-      <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-12">
-        
-        <div>
-          <h4 className="font-bold text-white text-xl mb-6">Contact us</h4>
-          <p className="mb-4">Email : <a href="mailto:Smartsync@help.in" className="hover:text-white">Smartsync@help.in</a></p>
-          <p className="mb-6">Call : <a href="tel:703712XXXX" className="hover:text-white">703712XXXX</a></p>
-          <hr className="border-white/20 mb-6" />
-          
-          <h4 className="font-bold text-white text-xl mb-6">Follow us</h4>
-          {/* --- YAHAN ICONS USE KIYE --- */}
-          <div className="flex gap-4 mb-8">
-            <a href="#" className="p-2 bg-white/10 rounded-full hover:bg-white/20">
-              <FaLinkedinIn className="w-5 h-5" />
-            </a>
-            <a href="#" className="p-2 bg-white/10 rounded-full hover:bg-white/20">
-              <FaTwitter className="w-5 h-5" />
-            </a>
-            <a href="#" className="p-2 bg-white/10 rounded-full hover:bg-white/20">
-              <FaFacebookF className="w-5 h-5" />
-            </a>
-            <a href="#" className="p-2 bg-white/10 rounded-full hover:bg-white/20">
-              <FaYoutube className="w-5 h-5" />
-            </a>
-            <a href="#" className="p-2 bg-white/10 rounded-full hover:bg-white/20">
-              <FaInstagram className="w-5 h-5" />
-            </a>
-          </div>
-          <hr className="border-white/20 mb-8" />
-          
-          <Link to="/" className="flex items-center gap-2">
-            {/* Logo image hai, isse nahi badla */}
-            <img src="/photos/logo.png" alt="SmartSync Logo" className="w-10 h-10" />
-            <span className="text-2xl font-bold text-white">SmartSync</span>
-          </Link>
-        </div>
-
-        <div>
-          <h4 className="font-bold text-white text-xl mb-6">Quick links</h4>
-          <ul className="space-y-4">
-            {quickLinks.map((link) => (
-              <li key={link.title}>
-                <Link to={link.to} className="hover:text-white">{link.title}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h4 className="font-bold text-white text-xl mb-6">Address</h4>
-          <p className="leading-relaxed">
-            CIN U74999MH2012PTC237035 <br />
-            6th Floor, F-Wing, Lotus Corporate Park, 185/A, <br />
-            Graham Firth Compound, Goregaon (E), Western <br />
-            Express Highway, Mumbai-400063
-          </p>
-        </div>
-      </div>
-    </footer>
-  );
-};
-
-
-// --- Main Homepage Component ---
+// --- Main Homepage Component (UPDATED) ---
 function HomePage() {
   return (
     <div className="w-full bg-white">
@@ -500,7 +409,7 @@ function HomePage() {
       <ReviewsSection />
       <FaqSection />
       <BenefitsAndStatsSection />
-      <Footer />
+      {/* Footer call removed from here */}
     </div>
   );
 }
