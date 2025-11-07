@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import { 
   FiList, FiClock, FiUsers, FiCopy, FiArrowUpRight, 
-  FiUpload, FiFileText, FiTrash, FiAward, FiTrendingUp, FiBarChart2, FiPieChart 
+  FiUpload, FiFileText, FiTrash, FiAward, FiBarChart2, FiPieChart, 
+  FiTrendingUp // <-- 1. ICON YAHAN ADD KAR DIYA
 } from 'react-icons/fi';
 import UploadNotesModal from '../components/UploadNotesModal'; 
 import AlertModal from '../components/AlertModal';
@@ -78,7 +79,7 @@ function ClassroomPage() {
   const navigate = useNavigate();
 
   const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
-  const JWT_TOKEN = localStorage.getItem('token');
+  const JWT_TOKEN = localStorage.getItem('accessToken'); // <-- 2. 'accessToken' use kiya
   
   const [alertConfig, setAlertConfig] = useState({
     isOpen: false,
@@ -92,7 +93,7 @@ function ClassroomPage() {
   // 1. Fetch Class Details
   useEffect(() => {
     const fetchClassDetails = async () => {
-      if (!JWT_TOKEN || JWT_TOKEN === 'undefined' || JWT_TOKEN === 'null') {
+      if (!JWT_TOKEN) { // Check for token
         navigate('/login'); 
         return; 
       }
@@ -100,7 +101,7 @@ function ClassroomPage() {
       
       setLoadingClass(true);
       try {
-        const classroomRes = await axios.get(`${API_URL}/api/classroom/my`, apiConfig);
+        const classroomRes = await api.get('/api/classroom/my'); // Use api
         let foundClass;
         if (Array.isArray(classroomRes.data)) {
           foundClass = classroomRes.data.find(c => c._id === classroomId);
@@ -118,7 +119,7 @@ function ClassroomPage() {
       }
     };
     fetchClassDetails();
-  }, [classroomId, API_URL, JWT_TOKEN, navigate]);
+  }, [classroomId, navigate]); // Removed unstable dependencies
 
   // 2. Fetch Quizzes (refreshable)
   const fetchQuizzes = useCallback(async () => {
@@ -128,8 +129,7 @@ function ClassroomPage() {
     setLoadingQuizzes(true);
     setQuizError(null);
     try {
-      const quizRes = await axios.get(`${API_URL}/api/quiz/classroom/${classroomId}`, apiConfig);
-      // Response { success: true, quizzes: [...] }
+      const quizRes = await api.get(`/api/quiz/classroom/${classroomId}`); // Use api
       if (quizRes.data && Array.isArray(quizRes.data.quizzes)) {
           setQuizzes(quizRes.data.quizzes);
       } else {
@@ -141,7 +141,7 @@ function ClassroomPage() {
     } finally {
       setLoadingQuizzes(false);
     }
-  }, [classroomId, API_URL, JWT_TOKEN]);
+  }, [classroomId, JWT_TOKEN]); // Added JWT_TOKEN
 
   // 3. Fetch Notes (refreshable)
   const fetchNotes = useCallback(async () => {
@@ -151,22 +151,19 @@ function ClassroomPage() {
     setLoadingNotes(true);
     setNotesError(null);
     try {
-      // --- 🚀🚀 YEH HAI ASLI FIX (Postman ke hisab se) 🚀🚀 ---
-      const notesRes = await axios.get(`${API_URL}/api/notes/${classroomId}`, apiConfig);
-      // Response { success: true, notes: [...] }
+      const notesRes = await api.get(`/api/notes/${classroomId}`); // Use api
       if (notesRes.data && Array.isArray(notesRes.data.notes)) {
         setNotes(notesRes.data.notes);
       } else {
         setNotes([]);
       }
-      // --- End of Fix ---
     } catch (err) {
       console.error("Error fetching notes:", err);
       setNotesError("Failed to load notes (API Error)");
     } finally {
       setLoadingNotes(false);
     }
-  }, [classroomId, API_URL, JWT_TOKEN]);
+  }, [classroomId, JWT_TOKEN]); // Added JWT_TOKEN
 
   // Page load hook
   useEffect(() => {
@@ -191,7 +188,7 @@ function ClassroomPage() {
   const executeDeleteQuiz = async (quizId) => {
     const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
     try {
-      await axios.delete(`${API_URL}/api/quiz/${quizId}`, apiConfig);
+      await api.delete(`/api/quiz/${quizId}`); // Use api
       setQuizzes(prevQuizzes => prevQuizzes.filter(quiz => quiz._id !== quizId));
       setAlertConfig({ isOpen: true, title: "Deleted!", message: "Quiz deleted successfully.", type: 'alert', status: 'success' });
     } catch (err) {
@@ -249,7 +246,7 @@ function ClassroomPage() {
           <h2 className="text-3xl font-semibold text-gray-800 mb-6">Future Score Predictor</h2>
           <div className="bg-white p-6 rounded-2xl shadow-lg">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
-              <FiTrendingUp className="text-blue-500" />
+              <FiTrendingUp className="text-blue-500" /> {/* <-- 3. ICON YAHAN USE HO RAHA HAI */}
               Predict a Student's Future Score
             </h3>
             <p className="text-gray-500 mb-4">(This feature is in progress. API integration needed.)</p>

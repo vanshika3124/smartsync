@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api'; // <-- 1. IMPORT 'api' INSTEAD OF 'axios'
 import { FiCopy } from 'react-icons/fi';
 
 function CreateClassroom() {
@@ -10,9 +10,7 @@ function CreateClassroom() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
-  const JWT_TOKEN = localStorage.getItem('token');
-  const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
+  // --- 2. REMOVED API_URL, JWT_TOKEN, and apiConfig ---
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -24,10 +22,10 @@ function CreateClassroom() {
     setError('');
 
     try {
-      const response = await axios.post(
-        `${API_URL}/api/classroom/create`,
-        { name: classroomName }, 
-        apiConfig
+      // --- 3. CHANGED 'axios.post' to 'api.post' and removed apiConfig ---
+      const response = await api.post(
+        '/api/classroom/create', // Relative URL is correct
+        { name: classroomName }
       );
       
       const responseData = response.data;
@@ -41,7 +39,8 @@ function CreateClassroom() {
 
     } catch (err) {
       console.error("Error creating classroom:", err);
-      setError(err.response?.data?.message || "Error: Classroom create nahi hui.");
+      // The interceptor will handle 401 errors
+      setError(err.response?.data?.message || "Error: Failed to create classroom.");
     } finally {
       setLoading(false);
     }
@@ -49,6 +48,7 @@ function CreateClassroom() {
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
+    // Use the custom AlertModal instead of window.alert if you have it
     alert('Code copied to clipboard!');
   };
 

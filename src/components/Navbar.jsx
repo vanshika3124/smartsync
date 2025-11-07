@@ -11,21 +11,22 @@ function Navbar() {
 
   const handleLogout = () => {
     if (typeof logout === 'function') {
-      logout(); 
+      logout(); // 1. Sets context state to 'false'
     }
-    localStorage.removeItem('token'); 
-    localStorage.removeItem('user'); 
+    // --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
+    localStorage.removeItem('accessToken');  // 2. Delete accessToken
+    localStorage.removeItem('refreshToken'); // 3. Delete refreshToken
+    localStorage.removeItem('user');         // 4. Delete user
+    // --- End of Fix ---
+
     navigate('/'); 
     setIsOpen(false);
   };
 
-  // --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
-  // Updated links based on your request
   const dashboardLink = isLoggedIn ? "/dashboard" : "/login";
-  const classroomLink = isLoggedIn ? "/create-classroom" : "/login"; // <-- UPDATED
-  const quizLink = isLoggedIn ? "/create-quiz" : "/login"; // <-- UPDATED
+  const classroomLink = isLoggedIn ? "/create-classroom" : "/login";
+  const quizLink = isLoggedIn ? "/create-quiz" : "/login";
   const faqsLink = "/faqs";
-  // --- End of Fix ---
 
   const isDashboardActive = location.pathname.startsWith('/dashboard');
 

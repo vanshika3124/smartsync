@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom'; 
-import axios from 'axios';
-// import TeachersSidebar from './TeachersSidebar'; // Already commented out, good
-import AlertModal from '../components/AlertModal'; // Alert modal (for delete)
-// --- CreateClassroomModal IMPORT HATA DIYA ---
+import api from '../api'; // <-- 1. IMPORT 'api' INSTEAD OF 'axios' 
+import AlertModal from '../components/AlertModal';
 import { 
   FiList, 
   FiClock, 
@@ -13,8 +11,7 @@ import {
   FiTrash
 } from 'react-icons/fi';
 
-// ... (ClassroomCard aur QuizCard components same rahenge) ...
-// --- Helper Component 1: Classroom Card ---
+// --- (ClassroomCard and QuizCard helper components are unchanged) ---
 const ClassroomCard = ({ classroom, onClick, onDelete }) => (
   <div 
     className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all relative"
@@ -35,7 +32,6 @@ const ClassroomCard = ({ classroom, onClick, onDelete }) => (
     <p className="font-medium text-gray-700">{classroom.students?.length || 0} students</p>
   </div>
 );
-// --- Helper Component 2: Quiz Card ---
 const QuizCard = ({ quiz, onDelete }) => (
   <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
     <div className="absolute top-6 right-6 flex items-center gap-2">
@@ -86,10 +82,11 @@ function TeachersDashboard() {
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // --- isModalOpen STATE HATA DIYA ---
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [userName, setUserName] = useState('');
   const navigate = useNavigate(); 
-  const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
+  
+  // --- 2. REMOVED API_URL ---
 
   const [alertConfig, setAlertConfig] = useState({
     isOpen: false,
@@ -100,6 +97,7 @@ function TeachersDashboard() {
     onConfirm: null,
   });
 
+  // This useEffect just reads localStorage, no API call, so it's fine
   useEffect(() => {
     try {
       const storedUser = JSON.parse(localStorage.getItem('user'));
@@ -114,25 +112,15 @@ function TeachersDashboard() {
     }
   }, []);
 
-  // --- Data Fetch Logic (No Change) ---
+  // --- Data Fetch Logic (UPDATED) ---
   const fetchDashboardData = useCallback(async () => {
-    const JWT_TOKEN = localStorage.getItem('token'); 
-    if (!JWT_TOKEN || JWT_TOKEN === 'undefined' || JWT_TOKEN === 'null') {
-      setError("You are not logged in. Please login.");
-      setLoading(false);
-      navigate('/login'); 
-      return; 
-    }
-    if (!API_URL && !import.meta.env.DEV) {
-      setError("Error: Backend URL not found.");
-      setLoading(false);
-      return;
-    }
-    const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
+    // --- 2. REMOVED JWT_TOKEN, apiConfig, and all checks ---
+    
     setLoading(true);
     
     try {
-      const classroomRes = await axios.get(`${API_URL}/api/classroom/my`, apiConfig);
+      // --- 3. Use 'api' and remove 'apiConfig' ---
+      const classroomRes = await api.get('/api/classroom/my');
       let fetchedClassrooms = [];
       if (Array.isArray(classroomRes.data)) {
         fetchedClassrooms = classroomRes.data;
@@ -146,16 +134,14 @@ function TeachersDashboard() {
     } catch (err) {
       console.error("Error fetching classrooms:", err);
       setError("Failed to load classroom data.");
-      if (err.response && err.response.status === 401) {
-        localStorage.removeItem('token'); 
-        navigate('/login');
-      }
+      // The interceptor will handle 401s
       setLoading(false);
       return;
     }
 
     try {
-      const quizRes = await axios.get(`${API_URL}/api/quiz/my-recent`, apiConfig);
+      // --- 3. Use 'api' and remove 'apiConfig' ---
+      const quizRes = await api.get('/api/quiz/my-recent');
       if (quizRes.data && Array.isArray(quizRes.data.quizzes)) {
         setQuizzes(quizRes.data.quizzes);
       } else { 
@@ -168,13 +154,12 @@ function TeachersDashboard() {
     }
     
     setLoading(false);
-  }, [navigate, API_URL]); 
+  }, [navigate]); // --- 4. UPDATED dependencies ---
 
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  // ... (Baaki saare functions same rahenge) ...
   const handleClassroomClick = (classroomId) => {
     navigate(`/classroom/${classroomId}`);
   };
@@ -191,10 +176,10 @@ function TeachersDashboard() {
   };
 
   const executeDeleteClassroom = async (classroomId) => {
-    const JWT_TOKEN = localStorage.getItem('token');
-    const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
+    // --- 2. REMOVED JWT_TOKEN and apiConfig ---
     try {
-      await axios.delete(`${API_URL}/api/classroom/${classroomId}`, apiConfig);
+      // --- 3. Use 'api' and remove 'apiConfig' ---
+      await api.delete(`/api/classroom/${classroomId}`);
       setClassrooms(prevClassrooms => prevClassrooms.filter(cls => cls._id !== classroomId));
       setAlertConfig({
         isOpen: true,
@@ -227,10 +212,10 @@ function TeachersDashboard() {
   };
 
   const executeDeleteQuiz = async (quizId) => {
-    const JWT_TOKEN = localStorage.getItem('token');
-    const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
+    // --- 2. REMOVED JWT_TOKEN and apiConfig ---
     try {
-      await axios.delete(`${API_URL}/api/quiz/${quizId}`, apiConfig);
+      // --- 3. Use 'api' and remove 'apiConfig' ---
+      await api.delete(`/api/quiz/${quizId}`);
       setQuizzes(prevQuizzes => prevQuizzes.filter(quiz => quiz._id !== quizId));
       setAlertConfig({
         isOpen: true,
@@ -255,6 +240,7 @@ function TeachersDashboard() {
     setAlertConfig({ isOpen: false, title: '', message: '' });
   };
   
+  // --- (renderContent is unchanged) ---
   const renderContent = () => {
     if (loading && classrooms.length === 0) {
       return <p className="text-center text-gray-500">Loading your dashboard...</p>;
@@ -267,9 +253,6 @@ function TeachersDashboard() {
         <section className="mb-12">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-3xl font-semibold text-gray-800">Your classrooms</h2>
-            
-            {/* --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 --- */}
-            {/* Button ko <Link> mein badal diya */}
             <Link 
               to="/create-classroom"
               className="bg-blue-600 text-white px-5 py-3 rounded-lg font-medium hover:bg-blue-700 shadow-md"
@@ -328,8 +311,8 @@ function TeachersDashboard() {
         <p className="text-lg text-gray-600">Welcome back, {userName}</p>
       </div>
       {renderContent()}
-
-      {/* --- CreateClassroomModal HATA DIYA --- */}
+      
+      {/* --- CreateClassroomModal REMOVED --- */}
       
       <AlertModal 
         isOpen={alertConfig.isOpen}

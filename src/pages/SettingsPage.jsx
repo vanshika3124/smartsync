@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { FiBell, FiTrash2 } from 'react-icons/fi';
+// No API calls in this file, so 'api.js' is not needed yet.
 
 function SettingsPage() {
   const [quizNotifications, setQuizNotifications] = useState(true);
   const [summaryNotifications, setSummaryNotifications] = useState(false);
 
   const handleDeleteAccount = () => {
-    // --- TODO: YAHAN DELETE ACCOUNT MODAL / API CALL HOGI ---
-    alert("DANGER: Account deletion logic yahan aayegi!");
+    // --- TODO: This needs an AlertModal and an API call ---
+    // (e.g., POST /api/auth/teacher/delete)
+    alert("DANGER: Account deletion logic goes here!");
   };
 
   return (

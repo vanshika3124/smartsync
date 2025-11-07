@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import api from '../api'; // <-- 1. IMPORT 'api' INSTEAD OF 'axios'
 import { FiUser, FiMail, FiLock, FiSave } from 'react-icons/fi';
 
 function ProfilePage() {
-  // User ki details ke liye state
+  // State for user details
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
 
-  // Password change ke liye state
+  // State for password change
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -14,8 +15,7 @@ function ProfilePage() {
   const [message, setMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Page load hone par user ki details localStorage se uthao
-  // (Maan rahe hain ki login pe 'user' object save kiya tha)
+  // Load user details from localStorage on page load
   useEffect(() => {
     try {
       const storedUser = JSON.parse(localStorage.getItem('user'));
@@ -24,25 +24,39 @@ function ProfilePage() {
         setEmail(storedUser.email || '');
       }
     } catch (e) {
-      console.error("User details nahi milin", e);
+      console.error("Failed to load user details", e);
     }
   }, []);
 
+  // --- 2. REMOVED API_URL, JWT_TOKEN, and apiConfig ---
+
   // Form Handlers
-  const handleUpdateProfile = (e) => {
+  const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setMessage('');
     setErrorMessage('');
-    // --- TODO: YAHAN PROFILE UPDATE KI API CALL HOGI ---
-    // (e.g., PUT /api/auth/teacher/profile)
-    console.log("Updating profile:", { name });
-    setMessage('Profile updated successfully!');
-    // localStorage mein bhi user update karo
-    const user = JSON.parse(localStorage.getItem('user'));
-    localStorage.setItem('user', JSON.stringify({ ...user, name }));
+    
+    try {
+      // --- 3. Use 'api.put' (or .post) ---
+      // TODO: Confirm this API endpoint (e.g., PUT /api/auth/teacher/profile)
+      const response = await api.put('/api/auth/teacher/profile', {
+        name: name,
+      });
+
+      // Update localStorage with the new user details from response
+      const updatedUser = response.data.user; // Assuming API returns { user: {...} }
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setName(updatedUser.name); // Update state just in case
+      
+      setMessage('Profile updated successfully!');
+
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      setErrorMessage(err.response?.data?.message || "Failed to update profile.");
+    }
   };
 
-  const handleChangePassword = (e) => {
+  const handleChangePassword = async (e) => {
     e.preventDefault();
     setMessage('');
     setErrorMessage('');
@@ -50,13 +64,24 @@ function ProfilePage() {
       setErrorMessage("New passwords don't match!");
       return;
     }
-    // --- TODO: YAHAN PASSWORD CHANGE KI API CALL HOGI ---
-    // (e.g., POST /api/auth/teacher/change-password)
-    console.log("Changing password...");
-    setMessage('Password changed successfully!');
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
+
+    try {
+      // --- 3. Use 'api.post' ---
+      // TODO: Confirm this API endpoint (e.g., POST /api/auth/teacher/change-password)
+      await api.post('/api/auth/teacher/change-password', {
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      });
+
+      setMessage('Password changed successfully!');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      
+    } catch (err) {
+      console.error("Error changing password:", err);
+      setErrorMessage(err.response?.data?.message || "Failed to change password.");
+    }
   };
 
   return (
@@ -95,7 +120,7 @@ function ProfilePage() {
                 <input 
                   type="email" id="email"
                   value={email}
-                  disabled // Email change nahi karne denge
+                  disabled // Email cannot be changed
                   className="w-full p-3 pl-12 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
                 />
               </div>

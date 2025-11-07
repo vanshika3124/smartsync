@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaRegEye, FaRegEyeSlash, FaRegUser, FaLock } from 'react-icons/fa';
-import axios from 'axios';
+import api from '../api'; // <-- 1. IMPORT 'api' INSTEAD OF 'axios'
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -14,24 +14,24 @@ function LoginForm({ showSignUp }) {
   const [message, setMessage] = useState('');
   const googleButtonRef = useRef(null);
   const navigate = useNavigate();
-  const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
+  
+  // --- 2. REMOVED API_URL ---
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('Logging in...');
-    if (!API_URL && !import.meta.env.DEV) {
-      setMessage("Error: Backend URL not found.");
-      return;
-    }
     
     try {
-      const response = await axios.post(`${API_URL}/api/auth/teacher/login`, {
+      // --- 3. Use 'api.post' ---
+      const response = await api.post('/api/auth/teacher/login', {
         email: formData.email,
         password: formData.password
       });
 
-      if (response.data && response.data.token && response.data.user) {
-        localStorage.setItem('token', response.data.token);
+      // --- 4. SAVE NEW TOKENS ---
+      if (response.data && response.data.accessToken && response.data.user) {
+        localStorage.setItem('accessToken', response.data.accessToken);
+        localStorage.setItem('refreshToken', response.data.refreshToken); // <-- NEW
         localStorage.setItem('user', JSON.stringify(response.data.user)); 
         
         if (typeof login === 'function') { login(); }
@@ -50,12 +50,15 @@ function LoginForm({ showSignUp }) {
     const idToken = response.credential;
     setMessage('Verifying Google Sign-In...');
     try {
-      const res = await axios.post(`${API_URL}/api/auth/teacher/google-login`, { 
+      // --- 3. Use 'api.post' ---
+      const res = await api.post('/api/auth/teacher/google-login', { 
         tokenId: idToken 
       });
 
-      if (res.data && res.data.token && res.data.user) {
-        localStorage.setItem('token', res.data.token);
+      // --- 4. SAVE NEW TOKENS ---
+      if (res.data && res.data.accessToken && res.data.user) {
+        localStorage.setItem('accessToken', res.data.accessToken);
+        localStorage.setItem('refreshToken', res.data.refreshToken); // <-- NEW
         localStorage.setItem('user', JSON.stringify(res.data.user));
         
         if (typeof login === 'function') { login(); }
@@ -96,25 +99,22 @@ function LoginForm({ showSignUp }) {
         <div className="w-full md:w-1/2 p-6 flex flex-col justify-center md:pl-16">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Sign In</h2>
           <form className="space-y-4" onSubmit={handleSubmit}>
-            {/* Email Field (No change) */}
+            {/* Email Field */}
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"><FaRegUser size={18} /></span>
               <input type="email" placeholder="Enter your email" name="email" value={formData.email} onChange={handleChange} className="w-full p-3 pl-12 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required />
             </div>
             
-            {/* Password Field (FIXED) */}
+            {/* Password Field */}
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"><FaLock size={18} /></span>
               <input type={showPass ? 'text' : 'password'} placeholder="Password" name="password" value={formData.password} onChange={handleChange} className="w-full p-3 pl-12 bg-white border border-gray-300 rounded-lg shadow-sm pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-              
-              {/* --- 🚀🚀 YAHAN TYPO FIX KIYA HAI 🚀🚀 --- */}
-              {/* 'top-1-2' ko 'top-1/2' kar diya hai */}
               <span onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700">
                 {showPass ? <FaRegEyeSlash size={18} /> : <FaRegEye size={18} />}
               </span>
             </div>
             
-            {/* Remember Me (No change) */}
+            {/* Remember Me */}
             <div className="flex items-center">
               <input type="checkbox" id="remember" className="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
               <label htmlFor="remember" className="text-sm text-gray-600">remember me</label>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api'; // <-- 1. IMPORT 'api' INSTEAD OF 'axios'
 
 function CreateQuiz() {
   const [title, setTitle] = useState('');
@@ -13,15 +13,14 @@ function CreateQuiz() {
   const [createdQuiz, setCreatedQuiz] = useState(null); 
 
   const navigate = useNavigate();
-  const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
-  const JWT_TOKEN = localStorage.getItem('token');
-  const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
+  // --- 2. REMOVED API_URL, JWT_TOKEN, and apiConfig ---
 
-  // Load classrooms (Same)
+  // Load classrooms
   useEffect(() => {
     const fetchClassrooms = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/classroom/my`, apiConfig);
+        // --- 3. CHANGED to 'api.get' and removed config ---
+        const response = await api.get('/api/classroom/my');
         if (Array.isArray(response.data)) {
           setClassrooms(response.data);
         } else if (response.data && Array.isArray(response.data.teacher)) {
@@ -35,9 +34,9 @@ function CreateQuiz() {
       }
     };
     fetchClassrooms();
-  }, [API_URL, JWT_TOKEN]); // Removed apiConfig
+  }, []); // <-- 4. Dependency array is now empty, runs once
 
-  // --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!classroomId) {
@@ -48,51 +47,48 @@ function CreateQuiz() {
     setError('');
 
     try {
-      const response = await axios.post(
-        `${API_URL}/api/quiz/create`,
-        { title, description, classroomId, durationMinutes },
-        apiConfig
+      // --- 3. CHANGED to 'api.post' and removed config ---
+      const response = await api.post(
+        '/api/quiz/create',
+        { title, description, classroomId, durationMinutes }
       );
       
-      console.log("Quiz Create API Response:", response.data); // Check console
+      console.log("Quiz Create API Response:", response.data); 
 
-      // Ab hum response ko deeply check karenge
       const responseData = response.data;
 
       if (responseData && (responseData._id || responseData.quizId || responseData.id)) {
-        // Case 1: Flat object { _id: ... }
         setCreatedQuiz(responseData);
       } else if (responseData && responseData.quiz && responseData.quiz._id) {
-        // Case 2: Nested object { quiz: { _id: ... } }
         setCreatedQuiz(responseData.quiz);
       } else {
-        // Case 3: Pata nahi kya aaya
         console.error("Unknown API response structure:", responseData);
-        setError("Quiz create ho gaya, par response structure galat tha.");
+        setError("Quiz created, but response structure was unexpected.");
       }
       
     } catch (err) {
       console.error("Error creating quiz:", err);
-      setError(err.response?.data?.message || "Error: Quiz create nahi hua.");
+      setError(err.response?.data?.message || "Error: Failed to create quiz.");
     } finally {
       setLoading(false);
     }
   };
 
-  // handleContinue function ab sahi 'createdQuiz' state use karega
+  // handleContinue function (no change needed)
   const handleContinue = () => {
     const newQuizId = createdQuiz?._id || createdQuiz?.quizId || createdQuiz?.id; 
 
     if (newQuizId) {
       navigate(`/quiz/${newQuizId}/add-questions`);
     } else {
-      setError("Error: Quiz ID nahi mila. Dashboard pe waapis jaao.");
+      setError("Error: Quiz ID not found. Please go back to dashboard.");
       console.error("Could not find ID in createdQuiz object:", createdQuiz);
       setCreatedQuiz(null); 
     }
   };
-  // --- End of Fix ---
 
+
+  // --- (Rest of the file is unchanged) ---
 
   // Step 2: Show Success Message
   if (createdQuiz) {
@@ -118,7 +114,7 @@ function CreateQuiz() {
     );
   }
 
-  // Step 1: Show Create Form (Same)
+  // Step 1: Show Create Form
   return (
     <main className="flex-1 p-8 md:p-12 bg-blue-50 min-h-screen">
       <div className="max-w-4xl mx-auto">

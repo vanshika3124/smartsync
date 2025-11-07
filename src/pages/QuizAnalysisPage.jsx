@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
-import { FiUsers, FiCheckCircle, FiTrendingUp, FiClock, FiChevronDown, FiExternalLink } from 'react-icons/fi';
-// Import chart components
+import api from '../api';
+import { FiUsers, FiCheckCircle, FiTrendingUp, FiClock, FiAward, FiBarChart2, FiPieChart } from 'react-icons/fi';
 import { Bar, Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -43,24 +42,38 @@ const StatCard = ({ title, value, icon, iconBg }) => (
   </div>
 );
 
-// 2. Top Performer Item
-const TopPerformerItem = ({ rank, submission }) => (
+// 2. Smart Leaderboard Item (for predicted scores)
+const LeaderboardItem = ({ rank, student }) => (
   <div className="flex items-center justify-between p-4 border-b border-gray-100">
     <div className="flex items-center gap-4">
       <span className="text-lg font-bold text-gray-400">#{rank}</span>
       <div>
-        <p className="text-lg font-semibold text-gray-900">{submission.student.name}</p>
-        <p className="text-sm text-gray-500">Submitted: {new Date(submission.submittedAt).toLocaleTimeString()}</p>
+        <p className="text-lg font-semibold text-gray-900">{student.name}</p>
+        <p className="text-sm text-gray-500">Student ID: {student.studentId}</p>
       </div>
     </div>
     <div className="text-right">
-      <p className="text-xl font-bold text-green-600">{submission.totalScore} pts</p>
-      <span className="text-sm text-gray-500">Score</span>
+      <p className="text-xl font-bold text-blue-600">{student.predictedScore.toFixed(2)}%</p>
+      <span className="text-sm text-gray-500">Predicted Score</span>
     </div>
   </div>
 );
 
-// --- 🚀🚀 AI INSIGHTS COMPONENT REMOVED ---
+// --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
+// 3. Full Submission Item (for actual results)
+const SubmissionItem = ({ submission }) => (
+  <tr className="border-b border-gray-200">
+    <td className="py-3 px-4 font-medium text-gray-900">{submission.student.name}</td>
+    <td className="py-3 px-4 text-gray-600">{submission.student.email}</td>
+    <td className="py-3 px-4 font-semibold text-green-600">{submission.totalScore} pts</td>
+    {/* Check if predictedScore exists before calling .toFixed() */}
+    <td className="py-3 px-4 font-semibold text-blue-600">
+      {submission.predictedScore ? `${submission.predictedScore.toFixed(1)} pts` : 'N/A'}
+    </td>
+  </tr>
+);
+// --- End of Fix ---
+
 
 // --- Chart Data (Placeholders) ---
 const pieChartData = {
@@ -83,41 +96,46 @@ function QuizAnalysisPage() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [leaderboardError, setLeaderboardError] = useState(null); // Added this state
   const navigate = useNavigate();
 
-  const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
-  const LEADERBOARD_API_URL = "https://team-task-leaderboard.onrender.com";
-  const JWT_TOKEN = localStorage.getItem('token');
-  
   useEffect(() => {
     const fetchData = async () => {
-      if (!JWT_TOKEN) {
-        navigate('/login');
-        return;
-      }
       setLoading(true);
       setError(null);
-      const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
+      setLeaderboardError(null); // Reset error
 
-      try {
-        const resultsRes = await axios.get(`${API_URL}/api/quiz/${quizId}/results`, apiConfig);
-        if (resultsRes.data && Array.isArray(resultsRes.data.submissions)) {
-          const sortedSubmissions = resultsRes.data.submissions.sort((a, b) => b.totalScore - a.totalScore);
-          setSubmissions(sortedSubmissions);
-        } else {
-          setSubmissions([]);
-        }
-        setLeaderboard([]); 
-      } catch (err) {
-        console.error("Failed to load analysis data:", err);
-        setError("Failed to load analysis data. Please check the APIs.");
-      } finally {
-        setLoading(false);
+      const resultsPromise = api.get(`/api/quiz/${quizId}/results`);
+      const leaderboardPromise = api.get(`/api/quiz/${quizId}/leaderboard`);
+
+      const [resultsRes, leaderboardRes] = await Promise.allSettled([
+        resultsPromise,
+        leaderboardPromise
+      ]);
+
+      // 1. Handle Results
+      if (resultsRes.status === 'fulfilled' && resultsRes.value.data && Array.isArray(resultsRes.value.data.submissions)) {
+        const sortedSubmissions = resultsRes.value.data.submissions.sort((a, b) => b.totalScore - a.totalScore);
+        setSubmissions(sortedSubmissions);
+      } else {
+        console.error("Failed to load results:", resultsRes.reason);
+        setError("Failed to load submissions.");
       }
+      
+      // 2. Handle Leaderboard
+      if (leaderboardRes.status === 'fulfilled' && leaderboardRes.value.data && Array.isArray(leaderboardRes.value.data.leaderboard)) {
+        setLeaderboard(leaderboardRes.value.data.leaderboard);
+      } else {
+        console.error("Failed to load leaderboard:", leaderboardRes.reason);
+        setLeaderboardError("Failed to load leaderboard (API 404).");
+      }
+
+      setLoading(false);
     };
     fetchData();
-  }, [quizId, API_URL, JWT_TOKEN, navigate]);
+  }, [quizId, navigate]);
 
+  // --- (Rest of the component is the same) ---
   const getChartData = () => {
     const labels = submissions.map(sub => sub.student.name);
     const data = submissions.map(sub => sub.totalScore); 
@@ -139,10 +157,9 @@ function QuizAnalysisPage() {
   };
 
   if (loading) return <main className="flex-1 p-10 text-center"><p>Loading Analysis...</p></main>;
-  if (error) return <main className="flex-1 p-10 text-center text-red-500"><p>{error}</p></main>;
+  if (error && submissions.length === 0) return <main className="flex-1 p-10 text-center text-red-500"><p>{error}</p></main>;
 
   const topPerformers = submissions.slice(0, 6); 
-  // --- 🚀🚀 AI INSIGHTS DATA ARRAY REMOVED ---
 
   return (
     <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#F0F7FF' }}>
@@ -159,10 +176,9 @@ function QuizAnalysisPage() {
 
       <h2 className="text-3xl font-semibold text-gray-800 mb-6">Performance Analysis</h2>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard 
-          title="Total Students" 
+          title="Total Submissions" 
           value={submissions.length}
           icon={<FiUsers className="text-blue-600" />}
           iconBg="bg-blue-100"
@@ -175,49 +191,78 @@ function QuizAnalysisPage() {
         />
         <StatCard 
           title="Improving" 
-          value={2} // TODO
+          value={"N/A"} 
           icon={<FiTrendingUp className="text-yellow-600" />}
           iconBg="bg-yellow-100"
         />
         <StatCard 
           title="Avg Time/Question" 
-          value={"26s"} // TODO
+          value={"N/A"} 
           icon={<FiClock className="text-purple-600" />}
           iconBg="bg-purple-100"
         />
       </div>
 
-      {/* Charts */}
+      <section className="mb-8">
+        <h2 className="text-3xl font-semibold text-gray-800 mb-6">Smart Leaderboard (Top 3 Predictions)</h2>
+        <div className="bg-white p-6 rounded-2xl shadow-lg">
+           <div className="flex items-center gap-2 mb-4">
+              <FiAward className="text-yellow-500" />
+              <h3 className="font-semibold text-xl">Top Predicted Performers</h3>
+           </div>
+           {loading && <p>Loading leaderboard...</p>}
+           {leaderboardError && <p className="text-red-500">{leaderboardError}</p>}
+           {!loading && !leaderboardError && (
+             <ol className="space-y-2">
+               {leaderboard.length > 0 ? (
+                 leaderboard.map((student, index) => (
+                   <LeaderboardItem key={student.studentId || index} student={student} rank={index + 1} />
+                 ))
+               ) : (
+                 <p className="text-gray-500">No leaderboard data available yet.</p>
+               )}
+             </ol>
+           )}
+        </div>
+      </section>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white p-6 rounded-2xl shadow-lg">
-          <h3 className="font-semibold mb-4">Student Performance Distribution</h3>
+          <h3 className="font-semibold mb-4">Student Performance Distribution (Actual Scores)</h3>
           <Bar data={getChartData()} options={{ plugins: { legend: { display: false } } }} />
         </div>
         <div className="bg-white p-6 rounded-2xl shadow-lg">
-          <h3 className="font-semibold mb-4">Topic Strength Analysis</h3>
+          <h3 className="font-semibold mb-4">Topic Strength Analysis (Placeholder)</h3>
           <Pie data={pieChartData} options={chartOptions} />
         </div>
       </div>
 
-      {/* Top Performers */}
-      <div className="bg-white p-6 rounded-2xl shadow-lg mb-8">
-        <h3 className="font-semibold text-xl mb-4">Top Performers</h3>
-        <div>
-          {topPerformers.length > 0 ? (
-            topPerformers.map((submission, index) => (
-              <TopPerformerItem 
-                key={submission._id}
-                rank={index + 1}
-                submission={submission}
-              />
-            ))
-          ) : (
-            <p>No submissions yet for this quiz.</p>
-          )}
-        </div>
-      </div>
-
-      {/* --- 🚀🚀 AI INSIGHTS SECTION REMOVED --- */}
+      <section className="bg-white p-6 rounded-2xl shadow-lg mb-8">
+        <h3 className="font-semibold text-xl mb-4">All Submissions</h3>
+        {error && !submissions.length && <p className="text-red-500">{error}</p>}
+        {submissions.length > 0 ? (
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b-2 border-gray-200">
+                <th className="py-3 px-4 font-semibold text-gray-600">Student Name</th>
+                <th className="py-3 px-4 font-semibold text-gray-600">Email</th>
+                <th className="py-3 px-4 font-semibold text-gray-600">Actual Score</th>
+                <th className="py-3 px-4 font-semibold text-gray-600">Predicted Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {submissions.map((submission) => (
+                <SubmissionItem 
+                  key={submission._id}
+                  submission={submission}
+                />
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          !loading && !error && <p>No submissions yet for this quiz.</p>
+        )}
+      </section>
 
     </main>
   );

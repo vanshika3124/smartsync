@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
-// 1. 'useNavigate' IMPORT KAREIN
 import { Link, useNavigate } from 'react-router-dom'; 
 import { useAuth } from '../context/AuthContext';
 
 function SignUpForm() {
   const { login } = useAuth(); 
-  // 2. 'navigate' VARIABLE BANAYEIN
   const navigate = useNavigate(); 
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
@@ -19,6 +17,9 @@ function SignUpForm() {
     confirmPassword: '',
   });
   const [message, setMessage] = useState('');
+
+  // --- 1. ADDED API_URL ---
+  const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,21 +36,39 @@ function SignUpForm() {
       setMessage('Error: Passwords do not match!');
       return;
     }
+    if (!API_URL && !import.meta.env.DEV) {
+        setMessage("Error: Backend URL not found.");
+        return;
+    }
+
     setMessage('Creating account...');
     try {
-      const response = await axios.post('https://testing-p3dv.onrender.com/api/auth/teacher/register', {
+      // --- 2. Use API_URL ---
+      const response = await axios.post(`${API_URL}/api/auth/teacher/register`, {
         name: formData.fullName,
         email: formData.email,
         password: formData.password,
-        // 3. 'role' WAPIS ADD KAREIN (Yahi 500 error de raha tha)
         role: "teacher" 
       });
+
       setMessage('Success! Account created successfully.');
       console.log(response.data); 
       
-      // 4. LOGIN KAREIN AUR DASHBOARD PAR BHEJEIN
-      login();
-      navigate('/dashboard');
+      // --- 3. SAVE NEW TOKENS ON SIGNUP ---
+      if (response.data && response.data.accessToken && response.data.user) {
+        localStorage.setItem('accessToken', response.data.accessToken);
+        localStorage.setItem('refreshToken', response.data.refreshToken);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        
+        // Log in and navigate to dashboard
+        if (typeof login === 'function') {
+          login();
+        }
+        navigate('/dashboard');
+      } else {
+        // Fallback if tokens aren't returned
+        setMessage("Account created, but failed to log in. Please go to login page.");
+      }
 
     } catch (error) {
       console.error('Registration failed:', error);

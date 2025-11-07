@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api'; // <-- 1. IMPORT 'api' INSTEAD OF 'axios'
 import { FiX, FiUploadCloud } from 'react-icons/fi';
 
 function UploadNotesModal({ isOpen, onClose, classroomId, onNoteUploaded }) {
@@ -9,8 +9,7 @@ function UploadNotesModal({ isOpen, onClose, classroomId, onNoteUploaded }) {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
-  const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
-  const JWT_TOKEN = localStorage.getItem('token');
+  // --- 2. REMOVED API_URL and JWT_TOKEN ---
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -26,31 +25,28 @@ function UploadNotesModal({ isOpen, onClose, classroomId, onNoteUploaded }) {
     setError('');
     setMessage('');
 
-    // FormData use karna padega file upload ke liye
     const formData = new FormData();
     formData.append('file', file);
     formData.append('title', title);
     formData.append('classroomId', classroomId);
 
     try {
-      await axios.post(
-        `${API_URL}/api/notes/upload`,
+      // --- 3. CHANGED to 'api.post' and updated headers ---
+      await api.post(
+        '/api/notes/upload', // Relative URL
         formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${JWT_TOKEN}`
+            // Authorization header is now added by the api.js interceptor
           }
         }
       );
       
       setMessage('Note uploaded successfully!');
-      onNoteUploaded(); // Classroom page ko refresh karo
-      setTimeout(() => { // Thodi der baad modal band karo
-        onClose();
-        setMessage('');
-        setTitle('');
-        setFile(null);
+      onNoteUploaded(); // Refresh the notes list
+      setTimeout(() => { // Close modal after a delay
+        handleClose(); // Use handleClose to reset state
       }, 1500);
 
     } catch (err) {

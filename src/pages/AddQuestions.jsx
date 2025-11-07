@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api'; // <-- 1. IMPORT 'api' INSTEAD OF 'axios'
 import { FiPlus } from 'react-icons/fi';
 
 // Initial state for a blank question
@@ -15,23 +15,20 @@ const blankQuestion = {
 };
 
 function AddQuestions() {
-  const { quizId } = useParams(); // URL se quizId nikaalo
+  const { quizId } = useParams(); // Get quizId from URL
   const [formData, setFormData] = useState(blankQuestion);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
-  const JWT_TOKEN = localStorage.getItem('token');
-  const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
+  // --- 2. REMOVED API_URL, JWT_TOKEN, and apiConfig ---
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // "Add More" ya "+ Add Questions" button
   const handleAddQuestion = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -40,7 +37,7 @@ function AddQuestions() {
 
     const { questionText, option1, option2, option3, option4, correctAnswer, marks } = formData;
     
-    // API Body banao
+    // API Body (unchanged)
     const questionData = {
       quizId: quizId,
       questionText: questionText,
@@ -51,19 +48,19 @@ function AddQuestions() {
     };
 
     try {
-      // API call: POST /api/quiz/add-question
-      await axios.post(
-        `${API_URL}/api/quiz/add-question`,
-        questionData,
-        apiConfig
+      // --- 3. CHANGED 'axios.post' to 'api.post' and removed apiConfig ---
+      await api.post(
+        `/api/quiz/add-question`, // Relative URL is correct
+        questionData
       );
       
       setMessage('Question added successfully! Add another.');
-      setFormData(blankQuestion); // Form ko reset kar do
+      setFormData(blankQuestion); // Reset the form
       
     } catch (err) {
       console.error("Error adding question:", err);
-      setError(err.response?.data?.message || "Error: Question add nahi hua.");
+      // The interceptor will handle 401 errors automatically
+      setError(err.response?.data?.message || "Error: Failed to add question.");
     } finally {
       setLoading(false);
     }
@@ -71,8 +68,6 @@ function AddQuestions() {
 
   // "Done" button
   const handleDone = () => {
-    // Optional: Check if form is empty. If not, ask to save.
-    // For now, just navigate
     navigate('/dashboard');
   };
 
@@ -96,7 +91,6 @@ function AddQuestions() {
         
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Questions</h2>
         
-        {/* Question Form */}
         <form onSubmit={handleAddQuestion} className="bg-white p-8 rounded-2xl shadow-lg space-y-6">
           {/* Question Text */}
           <div>
@@ -131,7 +125,7 @@ function AddQuestions() {
             </div>
           </div>
           
-          {/* Correct Answer & Points */}
+          {/* Correct Answer & Score */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="correctAnswer" className="block text-md font-medium text-gray-700 mb-2">Correct Answer</label>

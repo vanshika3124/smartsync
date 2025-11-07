@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import axios from 'axios'; // <-- 1. Import
+import api from '../api'; // <-- 1. IMPORT 'api' INSTEAD OF 'axios'
 import { 
   FiHome, 
   FiChevronDown, 
@@ -15,19 +15,19 @@ function TeachersSidebar() {
   const [isClassroomOpen, setIsClassroomOpen] = useState(true);
   const [isQuizzesOpen, setIsQuizzesOpen] = useState(true);
   
-  // --- 2. Classrooms ke liye state ---
   const [classrooms, setClassrooms] = useState([]);
   
-  const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
-  const JWT_TOKEN = localStorage.getItem('token');
-  const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
+  // --- 2. REMOVED API_URL, JWT_TOKEN, and apiConfig ---
 
-  // --- 3. Classrooms Fetch karne ke liye useEffect ---
   useEffect(() => {
     const fetchClassrooms = async () => {
-      if (!JWT_TOKEN) return; // Token nahi hai toh fetch mat karo
+      // --- 3. Check for 'accessToken' ---
+      const token = localStorage.getItem('accessToken');
+      if (!token) return; // Don't fetch if not logged in
+      
       try {
-        const response = await axios.get(`${API_URL}/api/classroom/my`, apiConfig);
+        // --- 4. Use 'api.get' and remove config ---
+        const response = await api.get('/api/classroom/my');
         let fetchedClassrooms = [];
         if (Array.isArray(response.data)) {
           fetchedClassrooms = response.data;
@@ -36,11 +36,11 @@ function TeachersSidebar() {
         }
         setClassrooms(fetchedClassrooms);
       } catch (err) {
-        console.error("Sidebar mein classroom fetch error:", err);
+        console.error("Sidebar classroom fetch error:", err);
       }
     };
     fetchClassrooms();
-  }, [API_URL, JWT_TOKEN]); // Removed apiConfig
+  }, []); // <-- 5. Dependency array is now empty
 
   // Helper 'NavLink'
   const getLinkClass = ({ isActive }) => 
@@ -83,7 +83,7 @@ function TeachersSidebar() {
                 <span>Create a classroom</span>
               </Link>
               
-              {/* --- 4. DYNAMIC CLASSROOM LIST --- */}
+              {/* DYNAMIC CLASSROOM LIST */}
               {classrooms.map(cls => (
                 <NavLink 
                   key={cls._id} 
