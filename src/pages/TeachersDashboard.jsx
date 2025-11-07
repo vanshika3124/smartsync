@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom'; 
-import api from '../api';
+import api from '../api'; 
 import AlertModal from '../components/AlertModal';
 import { 
   FiList, 
@@ -34,11 +34,13 @@ const ClassroomCard = ({ classroom, onClick, onDelete }) => (
 );
 
 // --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
+// --- Helper Component 2: Quiz Card (UPDATED) ---
 const QuizCard = ({ quiz, onDelete }) => (
   <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
-    {/* ID and Delete Icon */}
     <div className="absolute top-6 right-6 flex items-center gap-2">
-      {/* --- ID line removed --- */}
+      
+      {/* --- Quiz ID line removed --- */}
+      
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -80,7 +82,31 @@ const QuizCard = ({ quiz, onDelete }) => (
 // --- End of Fix ---
 
 
-// --- (Rest of TeachersDashboard.jsx is unchanged) ---
+// --- (Skeleton components are unchanged) ---
+const SkeletonClassroomCard = () => (
+  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 animate-pulse">
+    <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+    <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+    <div className="h-5 bg-gray-200 rounded w-1/2"></div>
+  </div>
+);
+const SkeletonQuizCard = () => (
+  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 animate-pulse">
+    <div className="h-8 bg-gray-200 rounded w-1/2 mb-4"></div>
+    <div className="flex items-center gap-6 mb-6">
+      <div className="h-5 bg-gray-200 rounded w-24"></div>
+      <div className="h-5 bg-gray-200 rounded w-24"></div>
+      <div className="h-5 bg-gray-200 rounded w-24"></div>
+    </div>
+    <div className="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
+      <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+      <div className="h-5 bg-gray-200 rounded w-1/4"></div>
+    </div>
+  </div>
+);
+
+
+// --- MUKHYA Dashboard Component ---
 function TeachersDashboard() {
   const [classrooms, setClassrooms] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
@@ -145,6 +171,7 @@ function TeachersDashboard() {
       setError("Classrooms loaded, but failed to load recent quizzes. (API Error)");
       setQuizzes([]);
     }
+    
     setLoading(false);
   }, [navigate]); 
 
@@ -229,7 +256,7 @@ function TeachersDashboard() {
   };
   
   const renderContent = () => {
-    if (loading && classrooms.length === 0) {
+    if (loading) {
       return (
         <>
           <section className="mb-12">
@@ -337,28 +364,5 @@ function TeachersDashboard() {
     </main>
   );
 }
-
-// Skeleton Components
-const SkeletonClassroomCard = () => (
-  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 animate-pulse">
-    <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
-    <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
-    <div className="h-5 bg-gray-200 rounded w-1/2"></div>
-  </div>
-);
-const SkeletonQuizCard = () => (
-  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 animate-pulse">
-    <div className="h-8 bg-gray-200 rounded w-1/2 mb-4"></div>
-    <div className="flex items-center gap-6 mb-6">
-      <div className="h-5 bg-gray-200 rounded w-24"></div>
-      <div className="h-5 bg-gray-200 rounded w-24"></div>
-      <div className="h-5 bg-gray-200 rounded w-24"></div>
-    </div>
-    <div className="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
-      <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-      <div className="h-5 bg-gray-200 rounded w-1/4"></div>
-    </div>
-  </div>
-);
 
 export default TeachersDashboard;
