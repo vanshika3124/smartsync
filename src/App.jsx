@@ -1,6 +1,6 @@
 import React from 'react';
 import Navbar from './components/Navbar';
-import Footer from './components/Footer'; // <-- 1. IMPORT FOOTER
+import Footer from './components/Footer'; 
 import SignUpForm from './pages/SignUpForm';
 import LoginForm from './pages/LoginForm';
 import HomePage from './pages/HomePage';
@@ -14,6 +14,7 @@ import CreateClassroom from './pages/CreateClassroom';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import QuizAnalysisPage from './pages/QuizAnalysisPage'; 
+import QuizDetailsPage from './pages/QuizDetailsPage'; // <-- 1. ADD THIS IMPORT
 
 import { Routes, Route } from 'react-router-dom';
 
@@ -22,8 +23,6 @@ function App() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      {/* 2. Add flex-1 to the main content area */}
-      {/* This makes the content area fill the space, pushing the footer down */}
       <main className="flex-1">
         <Routes>
           {/* Public Routes */}
@@ -41,6 +40,7 @@ function App() {
             <Route path="/settings" element={<SettingsPage />} />
             
             <Route path="/create-quiz" element={<CreateQuiz />} />
+            <Route path="/quiz/:quizId" element={<QuizDetailsPage />} /> {/* <-- 2. ADD THIS ROUTE */}
             <Route path="/quiz/:quizId/add-questions" element={<AddQuestions />} />
             <Route path="/quiz/:quizId/analysis" element={<QuizAnalysisPage />} />
           </Route>
@@ -48,7 +48,7 @@ function App() {
         </Routes>
       </main>
       
-      <Footer /> {/* <-- 3. ADD FOOTER HERE, outside the main content */}
+      <Footer /> 
     </div>
   );
 }
