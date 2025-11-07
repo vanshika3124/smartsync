@@ -42,6 +42,7 @@ const StatCard = ({ title, value, icon, iconBg }) => (
   </div>
 );
 
+// --- 🚀🚀 YEH NAYA COMPONENT HAI 🚀🚀 ---
 // 2. Smart Leaderboard Item (for predicted scores)
 const LeaderboardItem = ({ rank, student }) => (
   <div className="flex items-center justify-between p-4 border-b border-gray-100">
@@ -58,21 +59,22 @@ const LeaderboardItem = ({ rank, student }) => (
     </div>
   </div>
 );
+// --- End of New Component ---
 
-// --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
+// --- 🚀🚀 YEH UPDATED COMPONENT HAI 🚀🚀 ---
 // 3. Full Submission Item (for actual results)
 const SubmissionItem = ({ submission }) => (
   <tr className="border-b border-gray-200">
     <td className="py-3 px-4 font-medium text-gray-900">{submission.student.name}</td>
     <td className="py-3 px-4 text-gray-600">{submission.student.email}</td>
     <td className="py-3 px-4 font-semibold text-green-600">{submission.totalScore} pts</td>
-    {/* Check if predictedScore exists before calling .toFixed() */}
+    {/* Check if predictedScore exists before showing */}
     <td className="py-3 px-4 font-semibold text-blue-600">
       {submission.predictedScore ? `${submission.predictedScore.toFixed(1)} pts` : 'N/A'}
     </td>
   </tr>
 );
-// --- End of Fix ---
+// --- End of Update ---
 
 
 // --- Chart Data (Placeholders) ---
@@ -96,15 +98,17 @@ function QuizAnalysisPage() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [leaderboardError, setLeaderboardError] = useState(null); // Added this state
+  const [leaderboardError, setLeaderboardError] = useState(null);
   const navigate = useNavigate();
 
+  // --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
-      setLeaderboardError(null); // Reset error
+      setLeaderboardError(null);
 
+      // Dono APIs ko ek saath call karo
       const resultsPromise = api.get(`/api/quiz/${quizId}/results`);
       const leaderboardPromise = api.get(`/api/quiz/${quizId}/leaderboard`);
 
@@ -127,15 +131,15 @@ function QuizAnalysisPage() {
         setLeaderboard(leaderboardRes.value.data.leaderboard);
       } else {
         console.error("Failed to load leaderboard:", leaderboardRes.reason);
-        setLeaderboardError("Failed to load leaderboard (API 404).");
+        setLeaderboardError("Failed to load leaderboard (API 404 or Error).");
       }
 
       setLoading(false);
     };
     fetchData();
   }, [quizId, navigate]);
+  // --- End of Fix ---
 
-  // --- (Rest of the component is the same) ---
   const getChartData = () => {
     const labels = submissions.map(sub => sub.student.name);
     const data = submissions.map(sub => sub.totalScore); 
@@ -203,6 +207,7 @@ function QuizAnalysisPage() {
         />
       </div>
 
+      {/* --- 🚀🚀 ML LEADERBOARD SECTION ADDED 🚀🚀 --- */}
       <section className="mb-8">
         <h2 className="text-3xl font-semibold text-gray-800 mb-6">Smart Leaderboard (Top 3 Predictions)</h2>
         <div className="bg-white p-6 rounded-2xl shadow-lg">
@@ -225,6 +230,8 @@ function QuizAnalysisPage() {
            )}
         </div>
       </section>
+      {/* --- End of Section --- */}
+
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white p-6 rounded-2xl shadow-lg">
@@ -237,6 +244,7 @@ function QuizAnalysisPage() {
         </div>
       </div>
 
+      {/* --- 🚀🚀 FULL RESULTS TABLE UPDATED 🚀🚀 --- */}
       <section className="bg-white p-6 rounded-2xl shadow-lg mb-8">
         <h3 className="font-semibold text-xl mb-4">All Submissions</h3>
         {error && !submissions.length && <p className="text-red-500">{error}</p>}

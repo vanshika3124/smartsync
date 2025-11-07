@@ -90,7 +90,7 @@ const StartTeachingSection = () => {
           </Link>
           <Link to={classroomLink} className="block bg-[#E5F8EE] p-8 rounded-2xl shadow-md hover:shadow-lg transition-shadow text-[#00664F]">
             <img src="/photos/start-classroom.png" alt="Go to classroom" className="w-14 h-14 mx-auto mb-4" />
-            <h3 className="font-semibold text-xl">Go to classroom</h3>
+            <h3 className="font-semibold text-xl">Create classroom</h3>
           </Link>
           <Link to={trackLink} className="block bg-[#FFF0E7] p-8 rounded-2xl shadow-md hover:shadow-lg transition-shadow text-[#994A1A]">
             <img src="/photos/start-track.png" alt="Track progress" className="w-14 h-14 mx-auto mb-4" />
