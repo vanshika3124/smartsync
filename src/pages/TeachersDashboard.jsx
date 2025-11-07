@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom'; 
-import api from '../api'; // <-- 1. IMPORT 'api' INSTEAD OF 'axios' 
+import api from '../api';
 import AlertModal from '../components/AlertModal';
 import { 
   FiList, 
@@ -11,7 +11,7 @@ import {
   FiTrash
 } from 'react-icons/fi';
 
-// --- (ClassroomCard and QuizCard helper components are unchanged) ---
+// --- (ClassroomCard is unchanged) ---
 const ClassroomCard = ({ classroom, onClick, onDelete }) => (
   <div 
     className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all relative"
@@ -32,10 +32,13 @@ const ClassroomCard = ({ classroom, onClick, onDelete }) => (
     <p className="font-medium text-gray-700">{classroom.students?.length || 0} students</p>
   </div>
 );
+
+// --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
 const QuizCard = ({ quiz, onDelete }) => (
   <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
+    {/* ID and Delete Icon */}
     <div className="absolute top-6 right-6 flex items-center gap-2">
-      {quiz._id && <span className="text-sm text-gray-400">id.{quiz._id}</span>}
+      {/* --- ID line removed --- */}
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -74,20 +77,18 @@ const QuizCard = ({ quiz, onDelete }) => (
     </div>
   </div>
 );
+// --- End of Fix ---
 
 
-// --- MUKHYA Dashboard Component ---
+// --- (Rest of TeachersDashboard.jsx is unchanged) ---
 function TeachersDashboard() {
   const [classrooms, setClassrooms] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [userName, setUserName] = useState('');
   const navigate = useNavigate(); 
   
-  // --- 2. REMOVED API_URL ---
-
   const [alertConfig, setAlertConfig] = useState({
     isOpen: false,
     title: '',
@@ -97,7 +98,6 @@ function TeachersDashboard() {
     onConfirm: null,
   });
 
-  // This useEffect just reads localStorage, no API call, so it's fine
   useEffect(() => {
     try {
       const storedUser = JSON.parse(localStorage.getItem('user'));
@@ -112,14 +112,9 @@ function TeachersDashboard() {
     }
   }, []);
 
-  // --- Data Fetch Logic (UPDATED) ---
   const fetchDashboardData = useCallback(async () => {
-    // --- 2. REMOVED JWT_TOKEN, apiConfig, and all checks ---
-    
     setLoading(true);
-    
     try {
-      // --- 3. Use 'api' and remove 'apiConfig' ---
       const classroomRes = await api.get('/api/classroom/my');
       let fetchedClassrooms = [];
       if (Array.isArray(classroomRes.data)) {
@@ -134,13 +129,11 @@ function TeachersDashboard() {
     } catch (err) {
       console.error("Error fetching classrooms:", err);
       setError("Failed to load classroom data.");
-      // The interceptor will handle 401s
       setLoading(false);
       return;
     }
 
     try {
-      // --- 3. Use 'api' and remove 'apiConfig' ---
       const quizRes = await api.get('/api/quiz/my-recent');
       if (quizRes.data && Array.isArray(quizRes.data.quizzes)) {
         setQuizzes(quizRes.data.quizzes);
@@ -152,9 +145,8 @@ function TeachersDashboard() {
       setError("Classrooms loaded, but failed to load recent quizzes. (API Error)");
       setQuizzes([]);
     }
-    
     setLoading(false);
-  }, [navigate]); // --- 4. UPDATED dependencies ---
+  }, [navigate]); 
 
   useEffect(() => {
     fetchDashboardData();
@@ -176,9 +168,7 @@ function TeachersDashboard() {
   };
 
   const executeDeleteClassroom = async (classroomId) => {
-    // --- 2. REMOVED JWT_TOKEN and apiConfig ---
     try {
-      // --- 3. Use 'api' and remove 'apiConfig' ---
       await api.delete(`/api/classroom/${classroomId}`);
       setClassrooms(prevClassrooms => prevClassrooms.filter(cls => cls._id !== classroomId));
       setAlertConfig({
@@ -212,9 +202,7 @@ function TeachersDashboard() {
   };
 
   const executeDeleteQuiz = async (quizId) => {
-    // --- 2. REMOVED JWT_TOKEN and apiConfig ---
     try {
-      // --- 3. Use 'api' and remove 'apiConfig' ---
       await api.delete(`/api/quiz/${quizId}`);
       setQuizzes(prevQuizzes => prevQuizzes.filter(quiz => quiz._id !== quizId));
       setAlertConfig({
@@ -240,14 +228,39 @@ function TeachersDashboard() {
     setAlertConfig({ isOpen: false, title: '', message: '' });
   };
   
-  // --- (renderContent is unchanged) ---
   const renderContent = () => {
     if (loading && classrooms.length === 0) {
-      return <p className="text-center text-gray-500">Loading your dashboard...</p>;
+      return (
+        <>
+          <section className="mb-12">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-semibold text-gray-800">Your classrooms</h2>
+              <div className="bg-gray-200 h-12 w-48 rounded-lg animate-pulse"></div>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <SkeletonClassroomCard />
+              <SkeletonClassroomCard />
+              <SkeletonClassroomCard />
+            </div>
+          </section>
+          <section>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-semibold text-gray-800">Your recent quizzes</h2>
+              <div className="bg-gray-200 h-12 w-44 rounded-lg animate-pulse"></div>
+            </div>
+            <div className="space-y-6">
+              <SkeletonQuizCard />
+              <SkeletonQuizCard />
+            </div>
+          </section>
+        </>
+      );
     }
+    
     if (error && classrooms.length === 0) { 
       return <p className="text-center text-red-500">{error}</p>;
     }
+
     return (
       <>
         <section className="mb-12">
@@ -312,8 +325,6 @@ function TeachersDashboard() {
       </div>
       {renderContent()}
       
-      {/* --- CreateClassroomModal REMOVED --- */}
-      
       <AlertModal 
         isOpen={alertConfig.isOpen}
         onClose={closeAlertModal}
@@ -326,5 +337,28 @@ function TeachersDashboard() {
     </main>
   );
 }
+
+// Skeleton Components
+const SkeletonClassroomCard = () => (
+  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 animate-pulse">
+    <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+    <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+    <div className="h-5 bg-gray-200 rounded w-1/2"></div>
+  </div>
+);
+const SkeletonQuizCard = () => (
+  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 animate-pulse">
+    <div className="h-8 bg-gray-200 rounded w-1/2 mb-4"></div>
+    <div className="flex items-center gap-6 mb-6">
+      <div className="h-5 bg-gray-200 rounded w-24"></div>
+      <div className="h-5 bg-gray-200 rounded w-24"></div>
+      <div className="h-5 bg-gray-200 rounded w-24"></div>
+    </div>
+    <div className="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
+      <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+      <div className="h-5 bg-gray-200 rounded w-1/4"></div>
+    </div>
+  </div>
+);
 
 export default TeachersDashboard;

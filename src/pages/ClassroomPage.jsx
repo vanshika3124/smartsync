@@ -2,17 +2,28 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { 
-  FiList, FiClock, FiUsers, FiCopy, FiArrowUpRight, 
-  FiUpload, FiFileText, FiTrash, FiTrendingUp, FiBarChart2, FiPieChart 
+  FiList, 
+  FiClock, 
+  FiUsers, 
+  FiCopy, 
+  FiArrowUpRight, 
+  FiUpload, 
+  FiFileText, 
+  FiTrash, 
+  FiAward, 
+  FiTrendingUp, 
+  FiBarChart2, 
+  FiPieChart 
 } from 'react-icons/fi';
 import UploadNotesModal from '../components/UploadNotesModal'; 
 import AlertModal from '../components/AlertModal';
 
-// --- (QuizCard and NoteItem helper components are unchanged) ---
+// --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
 const QuizCard = ({ quiz, onDelete }) => (
   <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
+    {/* ID and Delete Icon */}
     <div className="absolute top-6 right-6 flex items-center gap-2">
-      {quiz._id && <span className="text-sm text-gray-400">id.{quiz._id}</span>}
+      {/* --- ID line removed --- */}
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -51,6 +62,8 @@ const QuizCard = ({ quiz, onDelete }) => (
     </div>
   </div>
 );
+// --- End of Fix ---
+
 const NoteItem = ({ note }) => (
   <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white">
     <div className="flex items-center gap-4">
@@ -62,7 +75,7 @@ const NoteItem = ({ note }) => (
 );
 
 
-// --- Main Classroom Page Component ---
+// --- (Rest of ClassroomPage.jsx is unchanged) ---
 function ClassroomPage() {
   const [classroom, setClassroom] = useState(null);
   const [quizzes, setQuizzes] = useState([]);
@@ -74,12 +87,10 @@ function ClassroomPage() {
   const [quizError, setQuizError] = useState(null);
   const [notesError, setNotesError] = useState(null);
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
-  const [userName, setUserName] = useState('Teacher'); // <-- State for user name
+  const [userName, setUserName] = useState('Teacher');
   const { classroomId } = useParams();
   const navigate = useNavigate();
 
-  const JWT_TOKEN = localStorage.getItem('accessToken');
-  
   const [alertConfig, setAlertConfig] = useState({
     isOpen: false,
     title: '',
@@ -91,7 +102,6 @@ function ClassroomPage() {
 
   // 1. Fetch Class Details & User Name
   useEffect(() => {
-    // Fetch user name from localStorage
     try {
       const storedUser = JSON.parse(localStorage.getItem('user'));
       if (storedUser && storedUser.name) {
@@ -99,12 +109,7 @@ function ClassroomPage() {
       }
     } catch (e) { console.error("Failed to parse user details", e); }
 
-    // Fetch class details
     const fetchClassDetails = async () => {
-      if (!JWT_TOKEN) { 
-        navigate('/login'); 
-        return; 
-      }
       setLoadingClass(true);
       try {
         const classroomRes = await api.get('/api/classroom/my');
@@ -125,11 +130,10 @@ function ClassroomPage() {
       }
     };
     fetchClassDetails();
-  }, [classroomId, navigate, JWT_TOKEN]);
+  }, [classroomId, navigate]);
 
   // 2. Fetch Quizzes
   const fetchQuizzes = useCallback(async () => {
-    if (!JWT_TOKEN) return;
     setLoadingQuizzes(true);
     setQuizError(null);
     try {
@@ -145,11 +149,10 @@ function ClassroomPage() {
     } finally {
       setLoadingQuizzes(false);
     }
-  }, [classroomId, JWT_TOKEN]);
+  }, [classroomId]);
 
   // 3. Fetch Notes
   const fetchNotes = useCallback(async () => {
-    if (!JWT_TOKEN) return;
     setLoadingNotes(true);
     setNotesError(null);
     try {
@@ -165,7 +168,7 @@ function ClassroomPage() {
     } finally {
       setLoadingNotes(false);
     }
-  }, [classroomId, JWT_TOKEN]);
+  }, [classroomId]);
 
   // Page load hook
   useEffect(() => {
@@ -254,7 +257,16 @@ function ClassroomPage() {
           </div>
         </section>
 
-        {/* --- 🚀🚀 LEADERBOARD SECTION REMOVED 🚀🚀 --- */}
+        <section className="mb-8">
+          <h2 className="text-3xl font-semibold text-gray-800 mb-6">Smart Leaderboard</h2>
+          <div className="bg-white p-6 rounded-2xl shadow-lg">
+             <div className="flex items-center gap-2">
+                <FiAward className="text-yellow-500" />
+                <h3 className="font-semibold">Leaderboard (Coming Soon)</h3>
+             </div>
+             <p className="text-gray-500 mt-2">This will show an ML-powered leaderboard...</p>
+          </div>
+        </section>
         
         <section className="mb-12">
           <h2 className="text-3xl font-semibold text-gray-800 mb-6">Quizzes</h2>
