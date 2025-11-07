@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../api'; // <-- 1. IMPORT 'api' INSTEAD OF 'axios'
+import { useNavigate, useLocation } from 'react-router-dom';
+import api from '../api'; 
 
 function CreateQuiz() {
   const [title, setTitle] = useState('');
@@ -13,28 +13,35 @@ function CreateQuiz() {
   const [createdQuiz, setCreatedQuiz] = useState(null); 
 
   const navigate = useNavigate();
-  // --- 2. REMOVED API_URL, JWT_TOKEN, and apiConfig ---
+  const location = useLocation();
+  const [classIdFromUrl, setClassIdFromUrl] = useState(null);
 
-  // Load classrooms
   useEffect(() => {
-    const fetchClassrooms = async () => {
-      try {
-        // --- 3. CHANGED to 'api.get' and removed config ---
-        const response = await api.get('/api/classroom/my');
-        if (Array.isArray(response.data)) {
-          setClassrooms(response.data);
-        } else if (response.data && Array.isArray(response.data.teacher)) {
-          setClassrooms(response.data.teacher); 
-        } else {
-          setClassrooms([]);
+    const params = new URLSearchParams(location.search);
+    const urlClassId = params.get('classId');
+
+    if (urlClassId) {
+      setClassroomId(urlClassId); 
+      setClassIdFromUrl(urlClassId); 
+    } else {
+      const fetchClassrooms = async () => {
+        try {
+          const response = await api.get('/api/classroom/my');
+          if (Array.isArray(response.data)) {
+            setClassrooms(response.data);
+          } else if (response.data && Array.isArray(response.data.teacher)) {
+            setClassrooms(response.data.teacher); 
+          } else {
+            setClassrooms([]);
+          }
+        } catch (err) {
+          console.error("Failed to fetch classrooms", err);
+          setError("Could not load your classrooms.");
         }
-      } catch (err) {
-        console.error("Failed to fetch classrooms", err);
-        setError("Could not load your classrooms.");
-      }
-    };
-    fetchClassrooms();
-  }, []); // <-- 4. Dependency array is now empty, runs once
+      };
+      fetchClassrooms();
+    }
+  }, [location.search]); 
 
   
   const handleSubmit = async (e) => {
@@ -47,24 +54,22 @@ function CreateQuiz() {
     setError('');
 
     try {
-      // --- 3. CHANGED to 'api.post' and removed config ---
       const response = await api.post(
         '/api/quiz/create',
         { title, description, classroomId, durationMinutes }
       );
       
-      console.log("Quiz Create API Response:", response.data); 
-
       const responseData = response.data;
+      let newQuiz;
 
       if (responseData && (responseData._id || responseData.quizId || responseData.id)) {
-        setCreatedQuiz(responseData);
+        newQuiz = responseData;
       } else if (responseData && responseData.quiz && responseData.quiz._id) {
-        setCreatedQuiz(responseData.quiz);
+        newQuiz = responseData.quiz;
       } else {
-        console.error("Unknown API response structure:", responseData);
-        setError("Quiz created, but response structure was unexpected.");
+        throw new Error("Unknown API response structure");
       }
+      setCreatedQuiz(newQuiz);
       
     } catch (err) {
       console.error("Error creating quiz:", err);
@@ -74,12 +79,11 @@ function CreateQuiz() {
     }
   };
 
-  // handleContinue function (no change needed)
   const handleContinue = () => {
     const newQuizId = createdQuiz?._id || createdQuiz?.quizId || createdQuiz?.id; 
 
     if (newQuizId) {
-      navigate(`/quiz/${newQuizId}/add-questions`);
+      navigate(`/quiz/${newQuizId}/add-questions?classId=${classroomId}`, { replace: true });
     } else {
       setError("Error: Quiz ID not found. Please go back to dashboard.");
       console.error("Could not find ID in createdQuiz object:", createdQuiz);
@@ -87,22 +91,19 @@ function CreateQuiz() {
     }
   };
 
-
-  // --- (Rest of the file is unchanged) ---
-
+  // --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
   // Step 2: Show Success Message
   if (createdQuiz) {
-    const quizIdToShow = createdQuiz._id || createdQuiz.quizId || createdQuiz.id;
+    // const quizIdToShow = createdQuiz._id || createdQuiz.quizId || createdQuiz.id; // Iski zaroorat nahi
     return (
       <main className="flex-1 p-8 md:p-12 bg-blue-50 min-h-screen flex items-center justify-center">
         <div className="bg-white p-8 md:p-12 rounded-2xl shadow-lg max-w-lg w-full text-center">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-8"> {/* Margin badha diya */}
             Your quiz has been successfully created
           </h2>
-          <div className="flex items-center justify-center gap-2 mb-8">
-            <span className="text-lg text-gray-600">quiz id .</span>
-            <span className="font-bold text-2xl text-gray-900">.{quizIdToShow}</span>
-          </div>
+          
+          {/* --- QUIZ ID WAALA DIV HATA DIYA --- */}
+          
           <button 
             onClick={handleContinue}
             className="text-blue-600 font-medium text-lg hover:underline"
@@ -113,6 +114,7 @@ function CreateQuiz() {
       </main>
     );
   }
+  // --- End of Fix ---
 
   // Step 1: Show Create Form
   return (
@@ -134,21 +136,25 @@ function CreateQuiz() {
                 required
               />
             </div>
-            <div>
-              <label htmlFor="class" className="block text-lg font-medium text-gray-700 mb-2">Class</label>
-              <select 
-                id="class"
-                value={classroomId}
-                onChange={(e) => setClassroomId(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="">Choose class</option>
-                {classrooms.map(cls => (
-                  <option key={cls._id} value={cls._id}>{cls.name}</option>
-                ))}
-              </select>
-            </div>
+            
+            {!classIdFromUrl && (
+              <div>
+                <label htmlFor="class" className="block text-lg font-medium text-gray-700 mb-2">Class</label>
+                <select 
+                  id="class"
+                  value={classroomId}
+                  onChange={(e) => setClassroomId(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Choose class</option>
+                  {classrooms.map(cls => (
+                    <option key={cls._id} value={cls._id}>{cls.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            
             <div>
               <label htmlFor="duration" className="block text-lg font-medium text-gray-700 mb-2">Time limit (in minutes)</label>
               <input 

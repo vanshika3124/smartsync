@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom'; 
 import { useAuth } from '../context/AuthContext';
 
 function SignUpForm() {
-  const { login } = useAuth(); 
+  const auth = useAuth(); // Get auth object
+  const login = auth ? auth.login : null;
+  const isLoggedIn = auth ? auth.isLoggedIn : false; // <-- 1. Get isLoggedIn state
   const navigate = useNavigate(); 
+  
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
-
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -17,9 +19,16 @@ function SignUpForm() {
     confirmPassword: '',
   });
   const [message, setMessage] = useState('');
-
-  // --- 1. ADDED API_URL ---
   const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
+
+  // --- 🚀🚀 YEH HAI ASLI FIX 1 🚀🚀 ---
+  // Agar user pehle se logged in hai, toh usko dashboard bhej do
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isLoggedIn, navigate]);
+  // --- End of Fix ---
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -43,7 +52,6 @@ function SignUpForm() {
 
     setMessage('Creating account...');
     try {
-      // --- 2. Use API_URL ---
       const response = await axios.post(`${API_URL}/api/auth/teacher/register`, {
         name: formData.fullName,
         email: formData.email,
@@ -52,21 +60,22 @@ function SignUpForm() {
       });
 
       setMessage('Success! Account created successfully.');
-      console.log(response.data); 
       
-      // --- 3. SAVE NEW TOKENS ON SIGNUP ---
       if (response.data && response.data.accessToken && response.data.user) {
         localStorage.setItem('accessToken', response.data.accessToken);
         localStorage.setItem('refreshToken', response.data.refreshToken);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         
-        // Log in and navigate to dashboard
         if (typeof login === 'function') {
           login();
         }
-        navigate('/dashboard');
+        
+        // --- 🚀🚀 YEH HAI ASLI FIX 2 🚀🚀 ---
+        // History replace karo
+        navigate('/dashboard', { replace: true });
+        // --- End of Fix ---
+
       } else {
-        // Fallback if tokens aren't returned
         setMessage("Account created, but failed to log in. Please go to login page.");
       }
 

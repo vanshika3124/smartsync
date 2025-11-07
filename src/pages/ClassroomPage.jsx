@@ -3,8 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { 
   FiList, FiClock, FiUsers, FiCopy, FiArrowUpRight, 
-  FiUpload, FiFileText, FiTrash, FiAward, FiBarChart2, FiPieChart, 
-  FiTrendingUp // <-- 1. ICON YAHAN ADD KAR DIYA
+  FiUpload, FiFileText, FiTrash, FiTrendingUp, FiBarChart2, FiPieChart 
 } from 'react-icons/fi';
 import UploadNotesModal from '../components/UploadNotesModal'; 
 import AlertModal from '../components/AlertModal';
@@ -75,11 +74,11 @@ function ClassroomPage() {
   const [quizError, setQuizError] = useState(null);
   const [notesError, setNotesError] = useState(null);
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
+  const [userName, setUserName] = useState('Teacher'); // <-- State for user name
   const { classroomId } = useParams();
   const navigate = useNavigate();
 
-  const API_URL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL;
-  const JWT_TOKEN = localStorage.getItem('accessToken'); // <-- 2. 'accessToken' use kiya
+  const JWT_TOKEN = localStorage.getItem('accessToken');
   
   const [alertConfig, setAlertConfig] = useState({
     isOpen: false,
@@ -90,18 +89,25 @@ function ClassroomPage() {
     onConfirm: null,
   });
 
-  // 1. Fetch Class Details
+  // 1. Fetch Class Details & User Name
   useEffect(() => {
+    // Fetch user name from localStorage
+    try {
+      const storedUser = JSON.parse(localStorage.getItem('user'));
+      if (storedUser && storedUser.name) {
+        setUserName(storedUser.name);
+      }
+    } catch (e) { console.error("Failed to parse user details", e); }
+
+    // Fetch class details
     const fetchClassDetails = async () => {
-      if (!JWT_TOKEN) { // Check for token
+      if (!JWT_TOKEN) { 
         navigate('/login'); 
         return; 
       }
-      const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
-      
       setLoadingClass(true);
       try {
-        const classroomRes = await api.get('/api/classroom/my'); // Use api
+        const classroomRes = await api.get('/api/classroom/my');
         let foundClass;
         if (Array.isArray(classroomRes.data)) {
           foundClass = classroomRes.data.find(c => c._id === classroomId);
@@ -119,17 +125,15 @@ function ClassroomPage() {
       }
     };
     fetchClassDetails();
-  }, [classroomId, navigate]); // Removed unstable dependencies
+  }, [classroomId, navigate, JWT_TOKEN]);
 
-  // 2. Fetch Quizzes (refreshable)
+  // 2. Fetch Quizzes
   const fetchQuizzes = useCallback(async () => {
     if (!JWT_TOKEN) return;
-    const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
-    
     setLoadingQuizzes(true);
     setQuizError(null);
     try {
-      const quizRes = await api.get(`/api/quiz/classroom/${classroomId}`); // Use api
+      const quizRes = await api.get(`/api/quiz/classroom/${classroomId}`);
       if (quizRes.data && Array.isArray(quizRes.data.quizzes)) {
           setQuizzes(quizRes.data.quizzes);
       } else {
@@ -141,17 +145,15 @@ function ClassroomPage() {
     } finally {
       setLoadingQuizzes(false);
     }
-  }, [classroomId, JWT_TOKEN]); // Added JWT_TOKEN
+  }, [classroomId, JWT_TOKEN]);
 
-  // 3. Fetch Notes (refreshable)
+  // 3. Fetch Notes
   const fetchNotes = useCallback(async () => {
     if (!JWT_TOKEN) return;
-    const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
-    
     setLoadingNotes(true);
     setNotesError(null);
     try {
-      const notesRes = await api.get(`/api/notes/${classroomId}`); // Use api
+      const notesRes = await api.get(`/api/notes/${classroomId}`);
       if (notesRes.data && Array.isArray(notesRes.data.notes)) {
         setNotes(notesRes.data.notes);
       } else {
@@ -163,7 +165,7 @@ function ClassroomPage() {
     } finally {
       setLoadingNotes(false);
     }
-  }, [classroomId, JWT_TOKEN]); // Added JWT_TOKEN
+  }, [classroomId, JWT_TOKEN]);
 
   // Page load hook
   useEffect(() => {
@@ -186,9 +188,8 @@ function ClassroomPage() {
   };
   
   const executeDeleteQuiz = async (quizId) => {
-    const apiConfig = { headers: { Authorization: `Bearer ${JWT_TOKEN}` } };
     try {
-      await api.delete(`/api/quiz/${quizId}`); // Use api
+      await api.delete(`/api/quiz/${quizId}`);
       setQuizzes(prevQuizzes => prevQuizzes.filter(quiz => quiz._id !== quizId));
       setAlertConfig({ isOpen: true, title: "Deleted!", message: "Quiz deleted successfully.", type: 'alert', status: 'success' });
     } catch (err) {
@@ -212,7 +213,7 @@ function ClassroomPage() {
         
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900">Teachers dashboard</h1>
-          <p className="text-lg text-gray-600">Welcome back, {JSON.parse(localStorage.getItem('user'))?.name || 'Teacher'}</p>
+          <p className="text-lg text-gray-600">Welcome back, {userName}</p>
         </div>
         
         <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 mb-8">
@@ -246,24 +247,15 @@ function ClassroomPage() {
           <h2 className="text-3xl font-semibold text-gray-800 mb-6">Future Score Predictor</h2>
           <div className="bg-white p-6 rounded-2xl shadow-lg">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
-              <FiTrendingUp className="text-blue-500" /> {/* <-- 3. ICON YAHAN USE HO RAHA HAI */}
+              <FiTrendingUp className="text-blue-500" />
               Predict a Student's Future Score
             </h3>
             <p className="text-gray-500 mb-4">(This feature is in progress. API integration needed.)</p>
           </div>
         </section>
 
-        <section className="mb-8">
-          <h2 className="text-3xl font-semibold text-gray-800 mb-6">Smart Leaderboard</h2>
-          <div className="bg-white p-6 rounded-2xl shadow-lg">
-             <div className="flex items-center gap-2">
-                <FiAward className="text-yellow-500" />
-                <h3 className="font-semibold">Leaderboard (Coming Soon)</h3>
-             </div>
-             <p className="text-gray-500 mt-2">This will show an ML-powered leaderboard...</p>
-          </div>
-        </section>
-
+        {/* --- 🚀🚀 LEADERBOARD SECTION REMOVED 🚀🚀 --- */}
+        
         <section className="mb-12">
           <h2 className="text-3xl font-semibold text-gray-800 mb-6">Quizzes</h2>
           {loadingQuizzes && <p className="text-gray-500">Loading quizzes...</p>}
