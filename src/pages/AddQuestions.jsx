@@ -1,58 +1,132 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api'; 
-import { FiPlus } from 'react-icons/fi';
+import { FiPlus, FiUpload, FiCheckCircle } from 'react-icons/fi'; 
 
-// Initial state for a blank question
+// --- 🚀 FIX 1: NAYI STATE FIELDS ADD KI HAIN ---
 const blankQuestion = {
+  type: 'mcq', // 'mcq' ya 'image'
   questionText: '',
+  imageUrl: null, // Image URL ke liye
   option1: '',
   option2: '',
   option3: '',
   option4: '',
-  correctAnswer: 'Option 1', // Default
+  correctAnswer: '', // Manual select ke liye
   marks: 10
 };
 
 function AddQuestions() {
-  const { quizId } = useParams(); // Get quizId from URL
+  const { quizId } = useParams(); 
   const [formData, setFormData] = useState(blankQuestion);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // --- 🚀 2. IMAGE UPLOAD KE LIYE NAYI STATE ---
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  // ------------------------------------------
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // --- 🚀 3. IMAGE FILE SELECT KARNE PAR AUTO-UPLOAD ---
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file)); 
+    
+    await handleImageUpload(file);
+  };
+
+  // --- 🚀 4. BACKEND KO IMAGE UPLOAD KARNE KA FUNCTION ---
+  const handleImageUpload = async (file) => {
+    setUploading(true);
+    setError('');
+    
+    const uploadFormData = new FormData();
+    uploadFormData.append("file", file);
+    
+    try {
+      const res = await api.post(
+        '/api/quiz/upload-image',
+        uploadFormData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        }
+      );
+      
+      setFormData(prev => ({ ...prev, imageUrl: res.data.url }));
+      setMessage('Image uploaded successfully!');
+      setImageFile(null); 
+      
+    } catch (err) {
+      console.error("Image upload failed:", err);
+      setError("Image upload failed. Please try again.");
+      setImageFile(null);
+      setImagePreview(null);
+    } finally {
+      setUploading(false);
+    }
+  };
+  // ------------------------------------------
+
+  // --- 🚀 5. 'ADD QUESTION' FUNCTION KO UPDATE KIYA HAI ---
   const handleAddQuestion = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     setMessage('');
 
-    const { questionText, option1, option2, option3, option4, correctAnswer, marks } = formData;
+    const { type, questionText, imageUrl, option1, option2, option3, option4, correctAnswer, marks } = formData;
+
+    // Correct Answer check
+    if (!correctAnswer) {
+      setError('Please manually select a correct answer.');
+      setLoading(false);
+      return;
+    }
+
+    // Image check
+    if (type === 'image' && !imageUrl) {
+      setError('Please upload an image or wait for it to finish.');
+      setLoading(false);
+      return;
+    }
+
+    // Correct Answer ka text value nikalo
+    let finalCorrectAnswer = '';
+    if (correctAnswer === 'opt1') finalCorrectAnswer = option1;
+    else if (correctAnswer === 'opt2') finalCorrectAnswer = option2;
+    else if (correctAnswer === 'opt3') finalCorrectAnswer = option3;
+    else if (correctAnswer === 'opt4') finalCorrectAnswer = option4;
     
-    // API Body (unchanged)
     const questionData = {
       quizId: quizId,
+      type: type,
       questionText: questionText,
-      type: 'mcq',
+      imageUrl: type === 'image' ? imageUrl : null,
       options: [option1, option2, option3, option4],
-      correctAnswer: correctAnswer,
+      correctAnswer: finalCorrectAnswer,
       marks: parseInt(marks, 10)
     };
 
     try {
-      await api.post(
-        `/api/quiz/add-question`, 
-        questionData
-      );
+      await api.post(`/api/quiz/add-question`, questionData);
       
       setMessage('Question added successfully! Add another.');
       setFormData(blankQuestion); // Reset the form
+      setImageFile(null);
+      setImagePreview(null);
       
     } catch (err) {
       console.error("Error adding question:", err);
@@ -62,41 +136,55 @@ function AddQuestions() {
     }
   };
 
-  // --- 1. "DONE" BUTTON KA LOGIC CHANGE HO GAYA HAI ---
+  // --- 🚀 6. 'DONE' FUNCTION KO BHI UPDATE KIYA HAI ---
   const handleDone = async () => {
     // Check if there is text in the main question field
     if (formData.questionText.trim() !== '') {
-      // Agar form khali nahi hai, toh pehle save karo
       setLoading(true); 
       setError('');
       setMessage('');
 
-      const { questionText, option1, option2, option3, option4, correctAnswer, marks } = formData;
+      const { type, questionText, imageUrl, option1, option2, option3, option4, correctAnswer, marks } = formData;
+
+      if (!correctAnswer) {
+        setError('Please manually select a correct answer before finishing.');
+        setLoading(false);
+        return;
+      }
+
+      if (type === 'image' && !imageUrl) {
+        setError('Please upload an image or wait for it to finish.');
+        setLoading(false);
+        return;
+      }
+
+      let finalCorrectAnswer = '';
+      if (correctAnswer === 'opt1') finalCorrectAnswer = option1;
+      else if (correctAnswer === 'opt2') finalCorrectAnswer = option2;
+      else if (correctAnswer === 'opt3') finalCorrectAnswer = option3;
+      else if (correctAnswer === 'opt4') finalCorrectAnswer = option4;
+      
       const questionData = {
         quizId: quizId,
+        type: type,
         questionText: questionText,
-        type: 'mcq',
+        imageUrl: type === 'image' ? imageUrl : null,
         options: [option1, option2, option3, option4],
-        correctAnswer: correctAnswer,
+        correctAnswer: finalCorrectAnswer,
         marks: parseInt(marks, 10)
       };
 
       try {
-        // Last question ko save karne ka try
         await api.post('/api/quiz/add-question', questionData);
-        
-        // Save hone ke baad, navigate karo
-        navigate('/dashboard');
+        navigate('/dashboard'); 
 
       } catch (err) {
-        // Agar save nahi hua, toh error dikhao aur ruko
         console.error("Error saving final question:", err);
-        setError(err.response?.data?.message || "Error: Failed to save final question before exiting.");
-        setLoading(false); // Taaki user error dekh sake
+        setError(err.response?.data?.message || "Error: Failed to save final question.");
+        setLoading(false); 
       }
       
     } else {
-      // Agar form khali hai, toh seedha navigate karo
       navigate('/dashboard');
     }
   };
@@ -106,18 +194,32 @@ function AddQuestions() {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Create a Quiz</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Add Questions</h1>
             <p className="text-lg text-gray-600">Quiz ID: {quizId}</p>
           </div>
-          {/* --- 2. "ADD QUESTION" BUTTON YAHAN SE HATA DIYA GAYA HAI --- */}
         </div>
         
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Questions</h2>
-        
         <form onSubmit={handleAddQuestion} className="bg-white p-8 rounded-2xl shadow-lg space-y-6">
-          {/* Question Text */}
+          
           <div>
-            <label htmlFor="questionText" className="block text-lg font-medium text-gray-700 mb-2">Question Text</label>
+            <label htmlFor="type" className="block text-lg font-medium text-gray-700 mb-2">Question Type</label>
+            <select
+              id="type"
+              name="type"
+              value={formData.type}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-200 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="mcq">MCQ (Text only)</option>
+              <option value="image">MCQ with Image</option>
+            </select>
+          </div>
+
+          {/* --- 🚀 YEH RAHA FIX (EXAMPLE TEXT HATA DIYA) 🚀 --- */}
+          <div>
+            <label htmlFor="questionText" className="block text-lg font-medium text-gray-700 mb-2">
+              Question Text
+            </label>
             <input 
               type="text" id="questionText" name="questionText"
               value={formData.questionText}
@@ -127,8 +229,44 @@ function AddQuestions() {
               required
             />
           </div>
+          {/* --- End of Fix --- */}
+
+          {formData.type === 'image' && (
+            <div>
+              <label className="block text-lg font-medium text-gray-700 mb-2">Question Image</label>
+              
+              {formData.imageUrl && !uploading && (
+                <div className="border-2 border-dashed border-green-500 rounded-lg w-full py-6 flex flex-col items-center justify-center bg-green-50">
+                   <FiCheckCircle className="w-10 h-10 text-green-600" />
+                   <span className="mt-2 font-semibold text-green-700">Image Uploaded!</span>
+                   <img src={formData.imageUrl} alt="Uploaded preview" className="max-h-24 w-auto rounded-lg shadow-sm mt-2" />
+                   <button type="button" onClick={() => { setFormData(prev => ({...prev, imageUrl: null})); setImagePreview(null); }} className="text-sm text-red-600 hover:underline mt-1">Remove Image</button>
+                </div>
+              )}
+
+              {!formData.imageUrl && (
+                <label className="border-2 border-dashed border-gray-300 rounded-lg w-full py-6 flex flex-col items-center justify-center hover:bg-gray-50 cursor-pointer">
+                  <div className="bg-blue-100 text-blue-600 rounded-full p-3">
+                    <FiUpload className="w-6 h-6" />
+                  </div>
+                  <span className="mt-4 font-semibold text-gray-700">
+                    {uploading ? 'Uploading...' : (imageFile ? imageFile.name : 'Click to Upload Image')}
+                  </span>
+                  {imagePreview && !uploading && (
+                     <img src={imagePreview} alt="Question preview" className="max-h-24 w-auto rounded-lg shadow-sm mt-2" />
+                  )}
+                  <input 
+                    type="file"
+                    className="hidden"
+                    accept="image/png, image/jpeg, image/gif"
+                    onChange={handleFileChange}
+                    disabled={uploading}
+                  />
+                </label>
+              )}
+            </div>
+          )}
           
-          {/* Options Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="option1" className="block text-md font-medium text-gray-700 mb-2">Option 1</label>
@@ -148,7 +286,6 @@ function AddQuestions() {
             </div>
           </div>
           
-          {/* Correct Answer & Score */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="correctAnswer" className="block text-md font-medium text-gray-700 mb-2">Correct Answer</label>
@@ -157,11 +294,13 @@ function AddQuestions() {
                 value={formData.correctAnswer}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-200 bg-gray-50 rounded-lg"
+                required
               >
-                <option value={formData.option1}>{formData.option1 || 'Option 1'}</option>
-                <option value={formData.option2}>{formData.option2 || 'Option 2'}</option>
-                <option value={formData.option3}>{formData.option3 || 'Option 3'}</option>
-                <option value={formData.option4}>{formData.option4 || 'Option 4'}</option>
+                <option value="" disabled>-- Select correct answer --</option>
+                <option value="opt1">{formData.option1 || 'Option 1'}</option>
+                <option value="opt2">{formData.option2 || 'Option 2'}</option>
+                <option value="opt3">{formData.option3 || 'Option 3'}</option>
+                <option value="opt4">{formData.option4 || 'Option 4'}</option>
               </select>
             </div>
             <div>
@@ -176,25 +315,22 @@ function AddQuestions() {
             </div>
           </div>
 
-          {/* --- 3. "ADD QUESTION" BUTTON KO NEECHE MOVE KAR DIYA GAYA HAI --- */}
           <button 
-            type="submit" // <-- 'onClick' se 'type="submit"' kiya
-            disabled={loading}
+            type="submit"
+            disabled={loading || uploading}
             className="w-full mt-6 bg-white text-gray-800 px-5 py-3 rounded-lg font-medium hover:bg-gray-100 shadow-sm border border-gray-200 flex items-center justify-center gap-2"
           >
             <FiPlus />
-            Add Question
+            {loading ? 'Saving...' : (uploading ? 'Uploading Image...' : 'Add Question')}
           </button>
 
-          {/* Messages */}
           {message && <p className="text-center text-sm font-medium text-green-600 mt-4">{message}</p>}
           {error && <p className="text-center text-sm font-medium text-red-600 mt-4">{error}</p>}
         </form>
 
-        {/* Done Button (iska 'onClick' change hua hai) */}
         <button 
           onClick={handleDone}
-          disabled={loading} // <-- Loading state yahan bhi add kar diya
+          disabled={loading || uploading}
           className="w-1/2 mx-auto mt-8 block bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md"
         >
           {loading ? 'Saving...' : 'Done'}

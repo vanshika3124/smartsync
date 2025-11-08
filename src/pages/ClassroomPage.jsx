@@ -4,26 +4,20 @@ import api from '../api';
 import { 
   FiList, 
   FiClock, 
-  FiUsers, 
-  FiCopy, 
   FiArrowUpRight, 
   FiUpload, 
   FiFileText, 
   FiTrash, 
   FiAward, 
-  FiTrendingUp, 
-  FiBarChart2, 
-  FiPieChart 
 } from 'react-icons/fi';
 import UploadNotesModal from '../components/UploadNotesModal'; 
 import AlertModal from '../components/AlertModal';
 
-// --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
+// --- 🚀🚀 YEH HAI AAPKA FIXED QUIZCARD 🚀🚀 ---
 const QuizCard = ({ quiz, onDelete }) => (
   <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
-    {/* ID and Delete Icon */}
+    {/* Delete Icon */}
     <div className="absolute top-6 right-6 flex items-center gap-2">
-      {/* --- ID line removed --- */}
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -43,19 +37,19 @@ const QuizCard = ({ quiz, onDelete }) => (
         {quiz.title}
       </Link>
     </div>
+    
     <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-gray-600 text-sm mb-6">
-      <span className="flex items-center gap-1.5"><FiList className="w-4 h-4" />{quiz.questions?.length || 0} questions</span>
+      
+      {/* --- 🚀 YEH RAHA FIX (Backend se 'questionCount' aa raha hai) 🚀 --- */}
+      <span className="flex items-center gap-1.5">
+        <FiList className="w-4 h-4" />{quiz.questionCount || 0} questions
+      </span>
+      {/* --- End of Fix --- */}
+
       <span className="flex items-center gap-1.5"><FiClock className="w-4 h-4" />{quiz.durationMinutes || 0} minutes</span>
-      <span className="flex items-center gap-1.5"><FiUsers className="w-4 h-4" />{quiz.participants?.length || 0} participants</span>
     </div>
-    <div className="bg-green-50 p-4 rounded-lg flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <span className="text-sm text-green-800 font-medium">Quiz Code</span>
-        <div className="flex items-center gap-2">
-          <span className="font-bold text-green-900 text-lg">{quiz.quizCode || 'N/A'}</span>
-          <button className="hover:opacity-70" title="Copy code"><FiCopy className="w-5 h-5" /></button>
-        </div>
-      </div>
+    
+    <div className="bg-green-50 p-4 rounded-lg flex items-center justify-end">
       <Link to={`/quiz/${quiz._id}/analysis`} className="flex items-center gap-1.5 text-blue-600 font-medium hover:underline">
         Check analysis <FiArrowUpRight className="w-4 h-4" />
       </Link>
@@ -75,7 +69,7 @@ const NoteItem = ({ note }) => (
 );
 
 
-// --- (Rest of ClassroomPage.jsx is unchanged) ---
+// --- (Baaki ka poora ClassroomPage.jsx code) ---
 function ClassroomPage() {
   const [classroom, setClassroom] = useState(null);
   const [quizzes, setQuizzes] = useState([]);
@@ -137,6 +131,7 @@ function ClassroomPage() {
     setLoadingQuizzes(true);
     setQuizError(null);
     try {
+      // Yeh API ab 'questionCount' bhej raha hai
       const quizRes = await api.get(`/api/quiz/classroom/${classroomId}`);
       if (quizRes.data && Array.isArray(quizRes.data.quizzes)) {
           setQuizzes(quizRes.data.quizzes);
@@ -246,23 +241,14 @@ function ClassroomPage() {
           </div>
         </div>
 
-        <section className="mb-8">
-          <h2 className="text-3xl font-semibold text-gray-800 mb-6">Future Score Predictor</h2>
-          <div className="bg-white p-6 rounded-2xl shadow-lg">
-            <h3 className="font-semibold mb-4 flex items-center gap-2">
-              <FiTrendingUp className="text-blue-500" />
-              Predict a Student's Future Score
-            </h3>
-            <p className="text-gray-500 mb-4">(This feature is in progress. API integration needed.)</p>
-          </div>
-        </section>
+        {/* --- "Future Score Predictor" Section Hata Diya Hai --- */}
 
         <section className="mb-8">
           <h2 className="text-3xl font-semibold text-gray-800 mb-6">Smart Leaderboard</h2>
           <div className="bg-white p-6 rounded-2xl shadow-lg">
              <div className="flex items-center gap-2">
-                <FiAward className="text-yellow-500" />
-                <h3 className="font-semibold">Leaderboard (Coming Soon)</h3>
+               <FiAward className="text-yellow-500" />
+               <h3 className="font-semibold">Leaderboard (Coming Soon)</h3>
              </div>
              <p className="text-gray-500 mt-2">This will show an ML-powered leaderboard...</p>
           </div>
@@ -311,6 +297,7 @@ function ClassroomPage() {
             </div>
           </div>
         </section>
+
       </main>
 
       <UploadNotesModal 

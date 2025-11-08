@@ -5,10 +5,9 @@ import AlertModal from '../components/AlertModal';
 import { 
   FiList, 
   FiClock, 
-  FiUsers, 
-  FiCopy, 
   FiArrowUpRight,
-  FiTrash
+  FiTrash,
+  FiBook // Classroom icon
 } from 'react-icons/fi';
 
 // --- (ClassroomCard is unchanged) ---
@@ -33,14 +32,10 @@ const ClassroomCard = ({ classroom, onClick, onDelete }) => (
   </div>
 );
 
-// --- 🚀🚀 YEH HAI ASLI FIX 🚀🚀 ---
-// --- Helper Component 2: Quiz Card (UPDATED) ---
+// --- 🚀 QUIZCARD (questionCount USE KAR RAHA HAI) 🚀 ---
 const QuizCard = ({ quiz, onDelete }) => (
   <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
     <div className="absolute top-6 right-6 flex items-center gap-2">
-      
-      {/* --- Quiz ID line removed --- */}
-      
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -60,26 +55,29 @@ const QuizCard = ({ quiz, onDelete }) => (
         {quiz.title}
       </Link>
     </div>
+    
     <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-gray-600 text-sm mb-6">
-      <span className="flex items-center gap-1.5"><FiList className="w-4 h-4" />{quiz.questions?.length || 0} questions</span>
+      <span className="flex items-center gap-1.5">
+        <FiList className="w-4 h-4" />{quiz.questionCount || 0} questions
+      </span>
       <span className="flex items-center gap-1.5"><FiClock className="w-4 h-4" />{quiz.durationMinutes || 0} minutes</span>
-      <span className="flex items-center gap-1.5"><FiUsers className="w-4 h-4" />{quiz.participants?.length || 0} participants</span>
     </div>
+    
     <div className="bg-green-50 p-4 rounded-lg flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <span className="text-sm text-green-800 font-medium">Quiz Code</span>
-        <div className="flex items-center gap-2">
-          <span className="font-bold text-green-900 text-lg">{quiz.quizCode || 'N/A'}</span>
-          <button className="hover:opacity-70" title="Copy code"><FiCopy className="w-5 h-5" /></button>
-        </div>
-      </div>
+      {quiz.classroom?.name ? (
+        <span className="flex items-center gap-1.5 font-medium text-blue-700">
+          <FiBook className="w-4 h-4" />{quiz.classroom.name}
+        </span>
+      ) : (
+        <span></span> 
+      )}
       <Link to={`/quiz/${quiz._id}/analysis`} className="flex items-center gap-1.5 text-blue-600 font-medium hover:underline">
         Check analysis <FiArrowUpRight className="w-4 h-4" />
       </Link>
     </div>
   </div>
 );
-// --- End of Fix ---
+// --- End of QuizCard ---
 
 
 // --- (Skeleton components are unchanged) ---
@@ -138,6 +136,7 @@ function TeachersDashboard() {
     }
   }, []);
 
+  // --- 🚀 DEBUGGING WALA FUNCTION 🚀 ---
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     try {
@@ -161,6 +160,11 @@ function TeachersDashboard() {
 
     try {
       const quizRes = await api.get('/api/quiz/my-recent');
+      
+      // --- 🚀 YEH LINE ADD HUI HAI 🚀 ---
+      console.log("--- DASHBOARD API RESPONSE ---", quizRes.data.quizzes);
+      // --- ------------------------- ---
+
       if (quizRes.data && Array.isArray(quizRes.data.quizzes)) {
         setQuizzes(quizRes.data.quizzes);
       } else { 
@@ -174,6 +178,7 @@ function TeachersDashboard() {
     
     setLoading(false);
   }, [navigate]); 
+  // --- End of Function ---
 
   useEffect(() => {
     fetchDashboardData();
@@ -183,6 +188,7 @@ function TeachersDashboard() {
     navigate(`/classroom/${classroomId}`);
   };
 
+  // ... (Baaki saara code delete/alert logic ka same hai)
   const handleDeleteClassroom = async (classroomId) => {
     setAlertConfig({
       isOpen: true,

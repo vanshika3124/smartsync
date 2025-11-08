@@ -32,7 +32,7 @@ const QuizDetailsSkeleton = () => (
     </div>
 
     {/* Stats & Add Button Skeleton */}
-    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 mb-8 flex flex-wrap justify-between items-center gap-4 animate-pulse">
+    <div className="bg-white p-6 rounded-20xl shadow-lg border border-gray-100 mb-8 flex flex-wrap justify-between items-center gap-4 animate-pulse">
       <div className="flex items-center gap-8">
         <div className="h-8 bg-gray-200 rounded-md w-24"></div>
         <div className="h-8 bg-gray-200 rounded-md w-24"></div>
@@ -53,8 +53,7 @@ const QuizDetailsSkeleton = () => (
 // --- End of Skeleton Components ---
 
 
-// --- 🚀🚀 YEH HAI FINAL FIXED 'QuestionCard' COMPONENT 🚀🚀 ---
-// Yeh component .trim() use karta hai taaki whitespace ki problem na ho
+// --- 🚀🚀 YEH HAI AAPKA NAYA 'QuestionCard' COMPONENT (IMAGE KE SAATH) 🚀🚀 ---
 const QuestionCard = ({ question, index }) => {
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -65,13 +64,23 @@ const QuestionCard = ({ question, index }) => {
         <span className="font-medium text-gray-700">{question.marks || 0} Points</span> 
       </div>
       
+      {/* --- 🚀 YEH NAYA SECTION ADD HUA HAI (IMAGE DIKHANE KE LIYE) 🚀 --- */}
+      {question.type === 'image' && question.imageUrl && (
+        <div className="mb-4">
+          <img 
+            src={question.imageUrl} 
+            alt="Question" 
+            className="max-h-72 w-auto rounded-lg shadow-md"
+          />
+        </div>
+      )}
+      {/* ----------------------------------------------------------------- */}
+
       <p className="text-xl text-gray-800 mb-6">{question.questionText}</p>
       
       <div className="space-y-3">
         {question.options.map((option, i) => {
           
-          // --- 🚀 YEH HAI ASLI FIX 🚀 ---
-          // Hum dono strings ko trim kar rahe hain
           const isCorrect = option.trim() === question.correctAnswer.trim();
           
           return (
@@ -111,7 +120,7 @@ function QuizDetailsPage() {
   const { quizId } = useParams();
   const navigate = useNavigate();
 
-  // --- 🚀🚀 YEH HAI FINAL FIXED 'fetchQuizDetails' FUNCTION 🚀🚀 ---
+  // --- 🚀 'fetchQuizDetails' (Data fix ke saath) 🚀 ---
   const fetchQuizDetails = useCallback(async () => {
     setLoading(true);
     try {
