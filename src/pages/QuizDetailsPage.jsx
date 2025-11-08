@@ -4,7 +4,7 @@ import api from '../api';
 import { FiList, FiClock, FiCheck, FiX, FiPlus } from 'react-icons/fi';
 import AddQuestionModal from '../components/AddQuestionModal';
 
-// --- 1. SKELETON LOADER COMPONENT (NEW) ---
+// --- 1. SKELETON LOADER COMPONENT ---
 
 // Skeleton for a single question card
 const QuestionCardSkeleton = () => (
@@ -53,7 +53,8 @@ const QuizDetailsSkeleton = () => (
 // --- End of Skeleton Components ---
 
 
-// --- Helper Component: Question Card (Unchanged) ---
+// --- 🚀🚀 YEH HAI FINAL FIXED 'QuestionCard' COMPONENT 🚀🚀 ---
+// Yeh component .trim() use karta hai taaki whitespace ki problem na ho
 const QuestionCard = ({ question, index }) => {
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -61,21 +62,24 @@ const QuestionCard = ({ question, index }) => {
         <h3 className="text-lg font-semibold text-gray-900">
           Question {index + 1}
         </h3>
-        <span className="font-medium text-gray-700">{question.marks || 0} Points</span>
+        <span className="font-medium text-gray-700">{question.marks || 0} Points</span> 
       </div>
       
       <p className="text-xl text-gray-800 mb-6">{question.questionText}</p>
       
       <div className="space-y-3">
         {question.options.map((option, i) => {
-          const isCorrect = option === question.correctAnswer;
+          
+          // --- 🚀 YEH HAI ASLI FIX 🚀 ---
+          // Hum dono strings ko trim kar rahe hain
+          const isCorrect = option.trim() === question.correctAnswer.trim();
           
           return (
             <div 
               key={i}
               className={`flex items-center gap-3 p-4 rounded-lg border-2
                 ${isCorrect 
-                  ? 'bg-green-50 border-green-500' 
+                  ? 'bg-green-100 border-green-500' 
                   : 'bg-gray-50 border-gray-200'
                 }
               `}
@@ -83,7 +87,7 @@ const QuestionCard = ({ question, index }) => {
               {isCorrect ? (
                 <FiCheck className="w-5 h-5 text-green-600 flex-shrink-0" />
               ) : (
-                <FiX className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                <FiX className="w-5 h-5 text-gray-400 flex-shrink-0" /> 
               )}
               <span className={`font-medium ${isCorrect ? 'text-green-800' : 'text-gray-700'}`}>
                 {option}
@@ -95,6 +99,7 @@ const QuestionCard = ({ question, index }) => {
     </div>
   );
 };
+// --- End of Updated Component ---
 
 
 // --- Main Page Component ---
@@ -106,11 +111,15 @@ function QuizDetailsPage() {
   const { quizId } = useParams();
   const navigate = useNavigate();
 
+  // --- 🚀🚀 YEH HAI FINAL FIXED 'fetchQuizDetails' FUNCTION 🚀🚀 ---
   const fetchQuizDetails = useCallback(async () => {
     setLoading(true);
     try {
       const response = await api.get(`/api/quiz/${quizId}`);
-      setQuiz(response.data); 
+      
+      // Data 'response.data.quiz' ke andar hai
+      setQuiz(response.data.quiz); 
+
       setError(null);
     } catch (err) {
       console.error("Failed to fetch quiz details:", err);
@@ -119,19 +128,20 @@ function QuizDetailsPage() {
       setLoading(false);
     }
   }, [quizId]); 
+  // --- End of Fix ---
 
   useEffect(() => {
     fetchQuizDetails();
   }, [fetchQuizDetails]);
 
-  // --- 2. LOADING STATE (UPDATED) ---
-  // Ab yeh text ki jagah Skeleton component dikhayega
+  // Loading state
   if (loading) return <QuizDetailsSkeleton />;
-  // --- End of Update ---
   
+  // Error/Not found states
   if (error) return <main className="flex-1 p-10 text-center text-red-500"><p>{error}</p></main>;
   if (!quiz) return <main className="flex-1 p-10 text-center text-red-500"><p>Quiz not found.</p></main>;
 
+  // --- Baaki ka JSX poora same hai ---
   return (
     <> 
       <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#F0F7FF' }}>
