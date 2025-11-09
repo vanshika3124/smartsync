@@ -24,7 +24,7 @@ const QuestionCardSkeleton = () => (
 
 // Skeleton for the entire page
 const QuizDetailsSkeleton = () => (
-  <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#F0F7FF' }}>
+  <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#E2F1F9' }}>
     {/* Header Skeleton */}
     <div className="mb-8">
       <div className="h-10 bg-gray-200 rounded-md w-3/4 mb-3 animate-pulse"></div>
@@ -153,7 +153,7 @@ function QuizDetailsPage() {
   // --- Baaki ka JSX poora same hai ---
   return (
     <> 
-      <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#F0F7FF' }}>
+      <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#E2F1F9' }}>
         
         {/* Header */}
         <div className="mb-8">

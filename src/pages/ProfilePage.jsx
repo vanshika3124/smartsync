@@ -85,10 +85,12 @@ function ProfilePage() {
   };
 
   return (
-    <main className="flex-1 p-8 md:p-12">
+    // --- 🚀 FIX 1: Background color add kiya ---
+    <main className="flex-1 p-8 md:p-12 bg-[#E2F1F9]">
+      {/* --- 🚀 FIX 2: Text color white kiya (readability ke liye) --- */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900">Your Profile</h1>
-        <p className="text-lg text-gray-600">Manage your personal information and password</p>
+        <h1 className="text-4xl font-bold text-black">Your Profile</h1>
+        <p className="text-lg text-black-200">Manage your personal information and password</p>
       </div>
 
       {/* Success/Error Messages */}
@@ -127,7 +129,7 @@ function ProfilePage() {
             </div>
             <button 
               type="submit"
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md flex items-center justify-center gap-2"
+              className="w-full bg-[#1E40AF] text-white py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors shadow-md flex items-center justify-center gap-2"
             >
               <FiSave />
               Save Changes
@@ -180,7 +182,7 @@ function ProfilePage() {
             </div>
             <button 
               type="submit"
-              className="w-full bg-gray-800 text-white py-3 rounded-lg font-semibold hover:bg-gray-900 transition-colors shadow-md"
+              className="w-full bg-[#1E40AF] text-white py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors shadow-md"
             >
               Change Password
             </button>

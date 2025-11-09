@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
-// --- 🚀 FIX: FiTrendingUp (Improving) icon hata diya hai ---
-import { FiUsers, FiCheckCircle, FiClock, FiAward } from 'react-icons/fi'; 
+import { FiUsers, FiCheckCircle, FiAward } from 'react-icons/fi';
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -26,9 +25,10 @@ ChartJS.register(
   ArcElement
 );
 
-// --- (Skeleton Loader is unchanged) ---
+// --- Skeleton Loader ---
 const AnalysisSkeleton = () => (
-  <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#F0F7FF' }}>
+  // --- 🚀 FIX: Padding mobile ke liye adjust ki ---
+  <main className="flex-1 p-6 md:p-10" style={{ backgroundColor: '#E2F1F9' }}>
     <div className="mb-8">
       <div className="h-10 bg-gray-200 rounded-md w-3/4 mb-3 animate-pulse"></div>
       <div className="h-6 bg-gray-200 rounded-md w-1/2 animate-pulse"></div>
@@ -38,9 +38,7 @@ const AnalysisSkeleton = () => (
       <div className="py-3 px-5 h-10 bg-gray-200 rounded-t-md w-24 ml-2 animate-pulse"></div>
     </div>
     <div className="h-8 bg-gray-200 rounded-md w-1/3 mb-6 animate-pulse"></div>
-    {/* --- 🚀 FIX: Grid 4 se 3 columns ka kar diya --- */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"> 
-      <div className="bg-white p-6 rounded-2xl shadow-lg h-32 animate-pulse"></div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       <div className="bg-white p-6 rounded-2xl shadow-lg h-32 animate-pulse"></div>
       <div className="bg-white p-6 rounded-2xl shadow-lg h-32 animate-pulse"></div>
     </div>
@@ -66,15 +64,15 @@ const StatCard = ({ title, value, icon, iconBg }) => (
   </div>
 );
 
-// --- 🚀 FIX: Leaderboard se 'Predicted Score' hata diya ---
-// (Backend se 'timeTaken' yahan nahi aata, toh hum N/A dikha rahe hain)
+// --- 🚀 FIX: Leaderboard item ko responsive banaya ---
 const LeaderboardItem = ({ rank, student }) => (
   <div className="flex items-center justify-between p-4 border-b border-gray-100">
     <div className="flex items-center gap-4">
       <span className="text-lg font-bold text-gray-400">#{rank}</span>
       <div>
         <p className="text-lg font-semibold text-gray-900">{student.name}</p>
-        <p className="text-sm text-gray-500">Student ID: {student.studentId}</p>
+        {/* --- Student ID ko mobile par hide kar diya --- */}
+        <p className="text-sm text-gray-500 hidden md:block">Student ID: {student.studentId}</p>
       </div>
     </div>
     <div className="text-right">
@@ -84,7 +82,7 @@ const LeaderboardItem = ({ rank, student }) => (
   </div>
 );
 
-// --- 🚀 FIX: Submission table mein 'Time Taken' add kiya ---
+// --- 🚀 FIX: Submission table item ko responsive banaya ---
 const SubmissionItem = ({ submission, rank }) => {
   const getRankBadge = (rank) => {
     if (rank === 1) return '🥇';
@@ -93,24 +91,15 @@ const SubmissionItem = ({ submission, rank }) => {
     return rank;
   };
 
-  // Time Taken ko format karte hain (assuming seconds)
-  const timeTaken = submission.timeTaken;
-  const displayTime = (typeof timeTaken === 'number') 
-    ? `${timeTaken.toFixed(0)}s` // e.g., "30s"
-    : 'N/A';
-
   return (
     <tr className="border-b border-gray-200">
       <td className="py-3 px-4 font-bold text-gray-900 w-20 text-center">
         {getRankBadge(rank)}
       </td>
       <td className="py-3 px-4 font-medium text-gray-900">{submission.student.name}</td>
-      <td className="py-3 px-4 text-gray-600">{submission.student.email}</td>
+      {/* --- Email ko mobile par hide kar diya --- */}
+      <td className="py-3 px-4 text-gray-600 hidden md:table-cell">{submission.student.email}</td>
       <td className="py-3 px-4 font-semibold text-green-600">{submission.totalScore} pts</td>
-      {/* 'Predicted Score' ki jagah 'Time Taken' */}
-      <td className="py-3 px-4 font-semibold text-blue-600">
-        {displayTime}
-      </td>
     </tr>
   );
 };
@@ -121,7 +110,7 @@ function QuizAnalysisPage() {
   const { quizId } = useParams();
   const [submissions, setSubmissions] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
-  const [quizDetails, setQuizDetails] = useState(null); 
+  const [quizDetails, setQuizDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [leaderboardError, setLeaderboardError] = useState(null);
@@ -135,7 +124,7 @@ function QuizAnalysisPage() {
 
       const resultsPromise = api.get(`/api/quiz/${quizId}/results`);
       const leaderboardPromise = api.get(`/api/quiz/${quizId}/leaderboard`);
-      const quizDetailsPromise = api.get(`/api/quiz/${quizId}`); 
+      const quizDetailsPromise = api.get(`/api/quiz/${quizId}`);
 
       const [resultsRes, leaderboardRes, quizDetailsRes] = await Promise.allSettled([
         resultsPromise,
@@ -145,19 +134,15 @@ function QuizAnalysisPage() {
 
       // 1. Results
       if (resultsRes.status === 'fulfilled' && resultsRes.value.data && Array.isArray(resultsRes.value.data.submissions)) {
-        // --- 🚀 FIX: Ab hum 'timeTaken' ke saath sort kar rahe hain (pehle score, fir time) ---
         const sortedSubmissions = resultsRes.value.data.submissions.sort((a, b) => {
-          if (b.totalScore !== a.totalScore) {
-            return b.totalScore - a.totalScore; // Pehle high score
-          }
-          return (a.timeTaken || 999) - (b.timeTaken || 999); // Fir low time
+          return b.totalScore - a.totalScore; 
         });
         setSubmissions(sortedSubmissions);
       } else {
         console.error("Failed to load results:", resultsRes.reason);
         setError("Failed to load submissions.");
       }
-      
+
       // 2. Leaderboard
       if (leaderboardRes.status === 'fulfilled' && leaderboardRes.value.data && Array.isArray(leaderboardRes.value.data.leaderboard)) {
         setLeaderboard(leaderboardRes.value.data.leaderboard);
@@ -185,11 +170,11 @@ function QuizAnalysisPage() {
     if (quizDetails && quizDetails.questions) {
       totalMarks = quizDetails.questions.reduce((sum, q) => sum + (q.marks || 0), 0);
     }
-    if (totalMarks === 0) totalMarks = 1; 
+    if (totalMarks === 0) totalMarks = 1;
 
     const labels = submissions.map(sub => sub.student.name);
-    const data = submissions.map(sub => (sub.totalScore / totalMarks) * 100); 
-    
+    const data = submissions.map(sub => (sub.totalScore / totalMarks) * 100);
+
     return {
       labels,
       datasets: [{
@@ -207,135 +192,122 @@ function QuizAnalysisPage() {
     const total = submissions.reduce((sum, sub) => sum + sub.totalScore, 0);
     return (total / submissions.length).toFixed(1);
   };
-  
-  // --- 🚀 NAYA FUNCTION: 'Avg Time' calculate karne ke liye ---
-  const getAverageTime = () => {
-    if (submissions.length === 0) return 'N/A';
-    const totalTime = submissions.reduce((sum, sub) => sum + (sub.timeTaken || 0), 0);
-    if (totalTime === 0) return 'N/A'; // Agar kisi ne bhi time nahi diya
-    const avg = totalTime / submissions.length;
-    return `${avg.toFixed(1)}s`; // e.g., "45.2s"
-  };
-  // --- End of Fix ---
+
 
   if (loading) return <AnalysisSkeleton />;
 
   if (error && submissions.length === 0) return <main className="flex-1 p-10 text-center text-red-500"><p>{error}</p></main>;
 
   return (
-    <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#F0F7FF' }}>
-      
-      {/* ... (Header and Tabs unchanged) ... */}
+    // --- 🚀 FIX: Padding mobile ke liye adjust ki ---
+    <main className="flex-1 p-6 md:p-10" style={{ backgroundColor: '#E2F1F9' }}>
+
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900">Teachers dashboard</h1>
-        <p className="text-lg text-gray-600">Welcome back, {JSON.parse(localStorage.getItem('user'))?.name || 'Teacher'}</p>
+        {/* --- 🚀 FIX: Responsive font size --- */}
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Teachers dashboard</h1>
+        <p className="text-base md:text-lg text-gray-600">Welcome back, {JSON.parse(localStorage.getItem('user'))?.name || 'Teacher'}</p>
       </div>
       <div className="flex border-b border-gray-300 mb-8">
         <Link to="/dashboard" className="py-3 px-5 text-gray-600 font-medium">My Quizzes</Link>
         <span className="py-3 px-5 text-blue-600 font-semibold border-b-2 border-blue-600">Analytics</span>
       </div>
 
-      <h2 className="text-3xl font-semibold text-gray-800 mb-6">Performance Analysis</h2>
+      {/* --- 🚀 FIX: Responsive font size --- */}
+      <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 mb-6">Performance Analysis</h2>
 
-      {/* --- 🚀 FIX: Stat Cards (3 columns) --- */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <StatCard 
-          title="Total Submissions" 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <StatCard
+          title="Total Submissions"
           value={submissions.length}
           icon={<FiUsers className="text-blue-600" />}
           iconBg="bg-blue-100"
         />
-        <StatCard 
-          title="Class Average" 
+        <StatCard
+          title="Class Average"
           value={`${getAverageScore()} pts`}
           icon={<FiCheckCircle className="text-green-600" />}
           iconBg="bg-green-100"
         />
-        {/* "Improving" card hata diya */}
-        <StatCard 
-          title="Avg Time/Question" 
-          value={getAverageTime()} // <-- Naya function call kiya
-          icon={<FiClock className="text-purple-600" />}
-          iconBg="bg-purple-100"
-        />
       </div>
-      {/* --- End of Fix --- */}
 
-      {/* --- 🚀 FIX: 'Smart Leaderboard' se 'Predicted Score' hata diya --- */}
+      {/* --- 🚀 FIX: Responsive font size --- */}
       <section className="mb-8">
-        <h2 className="text-3xl font-semibold text-gray-800 mb-6">Smart Leaderboard (Top 3 Predictions)</h2>
+        <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 mb-6">Smart Leaderboard (Top 3)</h2>
         <div className="bg-white p-6 rounded-2xl shadow-lg">
-           <div className="flex items-center gap-2 mb-4">
-             <FiAward className="text-yellow-500" />
-             <h3 className="font-semibold text-xl">Top Predicted Performers</h3>
-           </div>
-           {loading && <p>Loading leaderboard...</p>}
-           {leaderboardError && <p className="text-red-500">{leaderboardError}</p>}
-           {!loading && !leaderboardError && (
-             <ol className="space-y-2">
-               {leaderboard.length > 0 ? (
-                 leaderboard.map((student, index) => (
-                   <LeaderboardItem key={student.studentId || index} student={student} rank={index + 1} />
-                 ))
-               ) : (
-                 <p className="text-gray-500">No leaderboard data available yet.</p>
-               )}
-             </ol>
-           )}
+          <div className="flex items-center gap-2 mb-4">
+            <FiAward className="text-yellow-500" />
+            {/* --- 🚀 FIX: Responsive font size --- */}
+            <h3 className="font-semibold text-lg md:text-xl">Top Predicted Performers</h3>
+          </div>
+          {loading && <p>Loading leaderboard...</p>}
+          {leaderboardError && <p className="text-red-500">{leaderboardError}</p>}
+          {!loading && !leaderboardError && (
+            <ol className="space-y-2">
+              {leaderboard.length > 0 ? (
+                leaderboard.map((student, index) => (
+                  <LeaderboardItem key={student.studentId || index} student={student} rank={index + 1} />
+                ))
+              ) : (
+                <p className="text-gray-500">No leaderboard data available yet.</p>
+              )}
+            </ol>
+          )}
         </div>
       </section>
-      {/* --- End of Fix --- */}
-      
-      {/* --- (Chart section is unchanged) --- */}
+
       <div className="grid grid-cols-1 gap-6 mb-8">
         <div className="bg-white p-6 rounded-2xl shadow-lg">
-          <h3 className="font-semibold mb-4">Student Performance Distribution (Percentage %)</h3>
-          <div className="h-96"> 
-            <Bar 
-              data={getChartData()} 
-              options={{ 
+          {/* --- 🚀 FIX: Responsive font size --- */}
+          <h3 className="font-semibold text-lg md:text-xl mb-4">Student Performance Distribution (Percentage %)</h3>
+          <div className="h-96">
+            <Bar
+              data={getChartData()}
+              options={{
                 plugins: { legend: { display: false } },
                 maintainAspectRatio: false,
                 scales: {
                   y: {
                     beginAtZero: true,
                     min: 0,
-                    max: 100, 
+                    max: 100,
                     ticks: {
-                      callback: function(value) {
+                      callback: function (value) {
                         return value + '%'
                       }
                     }
                   }
                 }
-              }} 
+              }}
             />
           </div>
         </div>
       </div>
 
-      {/* --- 🚀 FIX: Table header change kiya --- */}
+      {/* --- 🚀 FIX: Table ko responsive banaya --- */}
       <section className="bg-white p-6 rounded-2xl shadow-lg mb-8">
-        <h3 className="font-semibold text-xl mb-4">Actual Quiz Results</h3>
+        {/* --- 🚀 FIX: Responsive font size --- */}
+        <h3 className="font-semibold text-lg md:text-xl mb-4">Actual Quiz Results</h3>
         {error && !submissions.length && <p className="text-red-500">{error}</p>}
         {submissions.length > 0 ? (
+          // --- Ab ye div mobile par scroll hoga agar zaroorat padi ---
           <div className="overflow-x-auto">
-            <table className="w-full text-left min-w-[600px]">
+            {/* --- min-w-[600px] hata diya taaki mobile par na failay --- */}
+            <table className="w-full text-left">
               <thead>
                 <tr className="border-b-2 border-gray-200">
                   <th className="py-3 px-4 font-semibold text-gray-600 w-20 text-center">Rank</th>
                   <th className="py-3 px-4 font-semibold text-gray-600">Student Name</th>
-                  <th className="py-3 px-4 font-semibold text-gray-600">Email</th>
+                  {/* --- Email ko mobile par hide kar diya --- */}
+                  <th className="py-3 px-4 font-semibold text-gray-600 hidden md:table-cell">Email</th>
                   <th className="py-3 px-4 font-semibold text-gray-600">Actual Score</th>
-                  <th className="py-3 px-4 font-semibold text-gray-600">Time Taken</th> {/* <-- Change kiya */}
                 </tr>
               </thead>
               <tbody>
                 {submissions.map((submission, index) => (
-                  <SubmissionItem 
+                  <SubmissionItem
                     key={submission._id}
                     submission={submission}
-                    rank={index + 1} 
+                    rank={index + 1}
                   />
                 ))}
               </tbody>

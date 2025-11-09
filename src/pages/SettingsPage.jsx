@@ -13,7 +13,7 @@ function SettingsPage() {
   };
 
   return (
-    <main className="flex-1 p-8 md:p-12">
+    <main className="flex-1 p-8 md:p-12 bg-[#E2F1F9]">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900">Settings</h1>
         <p className="text-lg text-gray-600">Manage your account and notification preferences</p>

@@ -86,7 +86,7 @@ function SignUpForm() {
   };
 
   return (
-    <div className="flex-grow flex items-center justify-center p-4 md:p-12">
+    <div className="flex-grow flex items-center justify-center p-4 md:p-12 bg-[#CFE7F5]">
       <div className="flex flex-col md:flex-row w-full max-w-6xl items-center">
         
         <div className="md:w-1/2 p-6 flex justify-center">
@@ -110,7 +110,7 @@ function SignUpForm() {
               Already have an account?{' '}
               <Link 
                 to="/login"
-                className="font-medium text-blue-600 hover:underline"
+                className="font-medium text-emerald-500 hover:underline"
               >
                 Login
               </Link>

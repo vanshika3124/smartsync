@@ -6,24 +6,21 @@ import {
   FiUpload, 
   FiFileText, 
   FiTrash, 
-  FiAward,
-  FiEdit // <-- 🚀 NAYA ICON ADD KIYA HAI
+  FiAward, // <-- Ab yeh use nahi ho raha
+  FiEdit 
 } from 'react-icons/fi';
 import UploadNotesModal from '../components/UploadNotesModal'; 
 import AlertModal from '../components/AlertModal';
 
-// --- 🚀 SKELETON LOADER (Unchanged) ---
+// --- SKELETON LOADER (Unchanged) ---
 const ClassroomPageSkeleton = () => (
-  <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#F0F7FF' }}>
+  <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#E2F1F9' }}>
     <div className="mb-8">
       <div className="h-10 bg-gray-200 rounded-md w-3/4 mb-3 animate-pulse"></div>
       <div className="h-6 bg-gray-200 rounded-md w-1/2 animate-pulse"></div>
     </div>
     <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 mb-8 h-32 animate-pulse"></div>
-    <section className="mb-8">
-      <div className="h-8 bg-gray-200 rounded-md w-1/3 mb-6 animate-pulse"></div>
-      <div className="bg-white p-6 rounded-2xl shadow-lg h-32 animate-pulse"></div>
-    </section>
+    {/* --- Skeleton Leaderboard Section Removed --- */}
     <section className="mb-12">
       <div className="h-8 bg-gray-200 rounded-md w-1/4 mb-6 animate-pulse"></div>
       <div className="bg-white p-6 rounded-2xl shadow-lg h-40 animate-pulse"></div>
@@ -35,11 +32,10 @@ const ClassroomPageSkeleton = () => (
   </main>
 );
 
-// --- 🚀🚀 YEH HAI AAPKA NAYA QUIZCARD (Design v3) 🚀🚀 ---
+// --- QUIZCARD (Design v3 - Unchanged) ---
 const QuizCard = ({ quiz, onDelete }) => (
-  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
+  <div className="bg-white p-6 rounded-2xl shadow-sm border border-emerald-200 relative">
     
-    {/* Delete Button (same) */}
     <div className="absolute top-6 right-6 flex items-center gap-2">
       <button
         onClick={(e) => {
@@ -53,17 +49,11 @@ const QuizCard = ({ quiz, onDelete }) => (
       </button>
     </div>
     
-    {/* Title */}
     <h3 className="font-bold text-2xl text-gray-900 pr-10 mb-6">
       {quiz.title}
     </h3>
     
-    {/* Question count aur Time (Hata diya gaya) */}
-
-    {/* Footer Bar with Links */}
-    <div className="bg-gray-50 p-4 rounded-lg flex items-center justify-between mt-4">
-      
-      {/* "VIEW / EDIT" LINK */}
+    <div className="bg-emerald-50 p-4 rounded-lg flex items-center justify-between mt-4">
       <Link 
         to={`/quiz/${quiz._id}`} 
         className="flex items-center gap-1.5 text-gray-700 font-semibold hover:text-blue-600"
@@ -72,7 +62,6 @@ const QuizCard = ({ quiz, onDelete }) => (
         View / Edit
       </Link>
       
-      {/* "CHECK ANALYSIS" LINK */}
       <Link 
         to={`/quiz/${quiz._id}/analysis`} 
         className="flex items-center gap-1.5 text-blue-600 font-semibold hover:underline"
@@ -83,9 +72,8 @@ const QuizCard = ({ quiz, onDelete }) => (
     </div>
   </div>
 );
-// --- End of Fix ---
 
-// --- 🚀 NAYA SKELETON CARD (LOADING QUIZZES KE LIYE) 🚀 ---
+// --- SKELETON QUIZCARD (Unchanged) ---
 const SkeletonQuizCard = () => (
   <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 animate-pulse">
     <div className="h-8 bg-gray-200 rounded w-3/4 mb-10"></div>
@@ -95,9 +83,8 @@ const SkeletonQuizCard = () => (
     </div>
   </div>
 );
-// --- End of Skeleton ---
 
-
+// --- NOTEITEM (Unchanged) ---
 const NoteItem = ({ note }) => (
   <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white">
     <div className="flex items-center gap-4">
@@ -246,10 +233,10 @@ function ClassroomPage() {
 
   return (
     <>
-      <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#F0F7FF' }}>
+      <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#E2F1F9' }}>
         
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900">Teachers dashboard</h1>
+          <h1 className="text-4xl font-bold text-gray-900">Classroom</h1>
           <p className="text-lg text-gray-600">Welcome back, {userName}</p>
         </div>
         
@@ -272,7 +259,7 @@ function ClassroomPage() {
               </button>
               <Link 
                 to={`/create-quiz?classId=${classroom._id}`}
-                className="bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600"
+                className="bg-emerald-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-green-600"
               >
                 Create a quiz
               </Link>
@@ -280,6 +267,8 @@ function ClassroomPage() {
           </div>
         </div>
 
+        {/* --- 🚀 SMART LEADERBOARD SECTION HATA DIYA GAYA HAI --- */}
+        {/*
         <section className="mb-8">
           <h2 className="text-3xl font-semibold text-gray-800 mb-6">Smart Leaderboard</h2>
           <div className="bg-white p-6 rounded-2xl shadow-lg">
@@ -290,11 +279,12 @@ function ClassroomPage() {
              <p className="text-gray-500 mt-2">This will show an ML-powered leaderboard...</p>
           </div>
         </section>
+        */}
+        {/* --- End of Fix --- */}
         
         <section className="mb-12">
           <h2 className="text-3xl font-semibold text-gray-800 mb-6">Quizzes</h2>
           
-          {/* --- 🚀 QUIZ LOADING/ERROR/LIST LOGIC UPDATE --- */}
           {loadingQuizzes && (
             <div className="space-y-6">
               <SkeletonQuizCard />
@@ -315,8 +305,6 @@ function ClassroomPage() {
               <p>No quizzes created for this class yet.</p>
             )}
           </div>
-          {/* --- End of Fix --- */}
-
         </section>
 
         <section>
@@ -365,4 +353,4 @@ function ClassroomPage() {
   );
 }
 
-export default ClassroomPage;
+export default ClassroomPage; 
