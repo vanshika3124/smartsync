@@ -104,7 +104,7 @@ function LoginForm({ showSignUp }) {
   };
 
   return (
-    <div className="flex-grow flex items-center justify-center p-4 md:p-12 bg-[#CFE7F5]">
+    <div className="flex-grow flex items-center justify-center p-4 md:p-12">
       <div className="flex flex-col md:flex-row w-full max-w-6xl items-center">
         <div className="md:w-1/2 p-6 flex justify-center">
           <img src="/photos/illustration.png" alt="Illustration" className="w-full max-w-lg" />
