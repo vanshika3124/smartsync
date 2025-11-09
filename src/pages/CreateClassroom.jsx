@@ -85,7 +85,7 @@ function CreateClassroom() {
   }
 
   return (
-    <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#F0F7FF' }}>
+    <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#E2F1F9' }}>
       <div className="max-w-xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Create your classroom</h1>
         <form onSubmit={handleCreate} className="bg-white p-8 rounded-2xl shadow-lg">
@@ -105,7 +105,7 @@ function CreateClassroom() {
           <button 
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md disabled:bg-gray-400"
+            className="w-full bg-blue-600 text-white py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors shadow-md disabled:bg-gray-400"
           >
             {loading ? 'Creating...' : 'Create classroom'}
           </button>

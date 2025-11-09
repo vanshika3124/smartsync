@@ -3,17 +3,16 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../api'; 
 import AlertModal from '../components/AlertModal';
 import { 
-  FiList, 
-  FiClock, 
   FiArrowUpRight,
   FiTrash,
-  FiBook // Classroom icon
+  FiBook, // Classroom icon
+  FiEdit  // Edit icon
 } from 'react-icons/fi';
 
 // --- (ClassroomCard is unchanged) ---
 const ClassroomCard = ({ classroom, onClick, onDelete }) => (
   <div 
-    className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all relative"
+    className="bg-white p-6 rounded-2xl shadow-sm border border-gray-300 cursor-pointer hover:shadow-md transition-all relative"
     onClick={() => onClick(classroom._id)} 
   >
     <button
@@ -32,9 +31,11 @@ const ClassroomCard = ({ classroom, onClick, onDelete }) => (
   </div>
 );
 
-// --- 🚀 QUIZCARD (questionCount USE KAR RAHA HAI) 🚀 ---
+// --- 🚀🚀 YEH HAI AAPKA NAYA QUIZCARD (Design v3) 🚀🚀 ---
 const QuizCard = ({ quiz, onDelete }) => (
-  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
+  <div className="bg-white p-6 rounded-2xl shadow-sm border border-emerald-200 relative">
+    
+    {/* Delete Button (same) */}
     <div className="absolute top-6 right-6 flex items-center gap-2">
       <button
         onClick={(e) => {
@@ -47,40 +48,45 @@ const QuizCard = ({ quiz, onDelete }) => (
         <FiTrash className="w-4 h-4" />
       </button>
     </div>
-    <div className="mb-4">
+    
+    {/* Title */}
+    <h3 className="font-bold text-2xl text-gray-900 pr-10">
+      {quiz.title}
+    </h3>
+    
+    {/* Classroom Name (small, under title) */}
+    <span className="flex items-center gap-1.5 font-medium text-gray-500 text-sm mt-2 mb-6">
+      <FiBook className="w-4 h-4" />
+      {quiz.classroom?.name || 'No Classroom'} 
+    </span>
+
+    {/* Footer Bar with Links */}
+    <div className="bg-emerald-50 p-4 rounded-lg flex items-center justify-between mt-4">
+      
+      {/* "VIEW / EDIT" LINK */}
       <Link 
         to={`/quiz/${quiz._id}`} 
-        className="font-bold text-2xl text-gray-900 pr-20 hover:text-blue-600 hover:underline"
+        className="flex items-center gap-1.5 text-gray-700 font-semibold hover:text-blue-600"
       >
-        {quiz.title}
+        <FiEdit className="w-4 h-4" /> 
+        View / Edit
       </Link>
-    </div>
-    
-    <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-gray-600 text-sm mb-6">
-      <span className="flex items-center gap-1.5">
-        <FiList className="w-4 h-4" />{quiz.questionCount || 0} questions
-      </span>
-      <span className="flex items-center gap-1.5"><FiClock className="w-4 h-4" />{quiz.durationMinutes || 0} minutes</span>
-    </div>
-    
-    <div className="bg-green-50 p-4 rounded-lg flex items-center justify-between">
-      {quiz.classroom?.name ? (
-        <span className="flex items-center gap-1.5 font-medium text-blue-700">
-          <FiBook className="w-4 h-4" />{quiz.classroom.name}
-        </span>
-      ) : (
-        <span></span> 
-      )}
-      <Link to={`/quiz/${quiz._id}/analysis`} className="flex items-center gap-1.5 text-blue-600 font-medium hover:underline">
-        Check analysis <FiArrowUpRight className="w-4 h-4" />
+      
+      {/* "CHECK ANALYSIS" LINK */}
+      <Link 
+        to={`/quiz/${quiz._id}/analysis`} 
+        className="flex items-center gap-1.5 text-blue-600 font-semibold hover:underline"
+      >
+        Check analysis 
+        <FiArrowUpRight className="w-4 h-4" />
       </Link>
     </div>
   </div>
 );
-// --- End of QuizCard ---
+// --- End of Fix ---
 
 
-// --- (Skeleton components are unchanged) ---
+// --- 🚀 NAYA SKELETON CARD (Design v3) 🚀 ---
 const SkeletonClassroomCard = () => (
   <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 animate-pulse">
     <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
@@ -90,18 +96,15 @@ const SkeletonClassroomCard = () => (
 );
 const SkeletonQuizCard = () => (
   <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 animate-pulse">
-    <div className="h-8 bg-gray-200 rounded w-1/2 mb-4"></div>
-    <div className="flex items-center gap-6 mb-6">
-      <div className="h-5 bg-gray-200 rounded w-24"></div>
-      <div className="h-5 bg-gray-200 rounded w-24"></div>
-      <div className="h-5 bg-gray-200 rounded w-24"></div>
-    </div>
-    <div className="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
-      <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-      <div className="h-5 bg-gray-200 rounded w-1/4"></div>
+    <div className="h-8 bg-gray-200 rounded w-1/2 mb-3"></div>
+    <div className="h-5 bg-gray-200 rounded w-1/3 mb-6"></div>
+    <div className="bg-gray-50 p-4 rounded-lg flex items-center justify-between h-14">
+        <div className="h-5 bg-gray-200 rounded-lg w-28"></div>
+        <div className="h-5 bg-gray-200 rounded-lg w-32"></div>
     </div>
   </div>
 );
+// --- End of Skeletons ---
 
 
 // --- MUKHYA Dashboard Component ---
@@ -136,7 +139,6 @@ function TeachersDashboard() {
     }
   }, []);
 
-  // --- 🚀 DEBUGGING WALA FUNCTION 🚀 ---
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     try {
@@ -160,11 +162,6 @@ function TeachersDashboard() {
 
     try {
       const quizRes = await api.get('/api/quiz/my-recent');
-      
-      // --- 🚀 YEH LINE ADD HUI HAI 🚀 ---
-      console.log("--- DASHBOARD API RESPONSE ---", quizRes.data.quizzes);
-      // --- ------------------------- ---
-
       if (quizRes.data && Array.isArray(quizRes.data.quizzes)) {
         setQuizzes(quizRes.data.quizzes);
       } else { 
@@ -178,7 +175,6 @@ function TeachersDashboard() {
     
     setLoading(false);
   }, [navigate]); 
-  // --- End of Function ---
 
   useEffect(() => {
     fetchDashboardData();
@@ -188,7 +184,7 @@ function TeachersDashboard() {
     navigate(`/classroom/${classroomId}`);
   };
 
-  // ... (Baaki saara code delete/alert logic ka same hai)
+  // --- (Baaki ka code delete logic etc. same hai) ---
   const handleDeleteClassroom = async (classroomId) => {
     setAlertConfig({
       isOpen: true,
@@ -301,7 +297,7 @@ function TeachersDashboard() {
             <h2 className="text-3xl font-semibold text-gray-800">Your classrooms</h2>
             <Link 
               to="/create-classroom"
-              className="bg-blue-600 text-white px-5 py-3 rounded-lg font-medium hover:bg-blue-700 shadow-md"
+              className="bg-[#1E40AF] text-white px-5 py-3 rounded-full font-medium hover:bg-blue-800 shadow-md"
             >
               Create new classroom
             </Link>
@@ -326,7 +322,7 @@ function TeachersDashboard() {
             <h2 className="text-3xl font-semibold text-gray-800">Your recent quizzes</h2>
             <Link 
               to="/create-quiz"
-              className="bg-blue-600 text-white px-5 py-3 rounded-lg font-medium hover:bg-blue-700 shadow-md"
+                className="bg-[#1E40AF] text-white px-5 py-3 rounded-full font-medium hover:bg-blue-800 shadow-md"
             >
               Create new quiz
             </Link>
@@ -351,7 +347,7 @@ function TeachersDashboard() {
   };
   
   return (
-    <main className="flex-1 p-8 md:p-12">
+    <main className="flex-1 p-8 md:p-12 bg-[#E2F1F9]">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900">Teachers dashboard</h1>
         <p className="text-lg text-gray-600">Welcome back, {userName}</p>

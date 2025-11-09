@@ -3,16 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api'; 
 import { FiPlus, FiUpload, FiCheckCircle } from 'react-icons/fi'; 
 
-// --- 🚀 FIX 1: NAYI STATE FIELDS ADD KI HAIN ---
+// --- (blankQuestion state is unchanged) ---
 const blankQuestion = {
-  type: 'mcq', // 'mcq' ya 'image'
+  type: 'mcq', 
   questionText: '',
-  imageUrl: null, // Image URL ke liye
+  imageUrl: null, 
   option1: '',
   option2: '',
   option3: '',
   option4: '',
-  correctAnswer: '', // Manual select ke liye
+  correctAnswer: '', 
   marks: 10
 };
 
@@ -24,18 +24,15 @@ function AddQuestions() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // --- 🚀 2. IMAGE UPLOAD KE LIYE NAYI STATE ---
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
-  // ------------------------------------------
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // --- 🚀 3. IMAGE FILE SELECT KARNE PAR AUTO-UPLOAD ---
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -46,7 +43,6 @@ function AddQuestions() {
     await handleImageUpload(file);
   };
 
-  // --- 🚀 4. BACKEND KO IMAGE UPLOAD KARNE KA FUNCTION ---
   const handleImageUpload = async (file) => {
     setUploading(true);
     setError('');
@@ -78,9 +74,7 @@ function AddQuestions() {
       setUploading(false);
     }
   };
-  // ------------------------------------------
 
-  // --- 🚀 5. 'ADD QUESTION' FUNCTION KO UPDATE KIYA HAI ---
   const handleAddQuestion = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -89,21 +83,18 @@ function AddQuestions() {
 
     const { type, questionText, imageUrl, option1, option2, option3, option4, correctAnswer, marks } = formData;
 
-    // Correct Answer check
     if (!correctAnswer) {
       setError('Please manually select a correct answer.');
       setLoading(false);
       return;
     }
 
-    // Image check
     if (type === 'image' && !imageUrl) {
       setError('Please upload an image or wait for it to finish.');
       setLoading(false);
       return;
     }
 
-    // Correct Answer ka text value nikalo
     let finalCorrectAnswer = '';
     if (correctAnswer === 'opt1') finalCorrectAnswer = option1;
     else if (correctAnswer === 'opt2') finalCorrectAnswer = option2;
@@ -124,7 +115,7 @@ function AddQuestions() {
       await api.post(`/api/quiz/add-question`, questionData);
       
       setMessage('Question added successfully! Add another.');
-      setFormData(blankQuestion); // Reset the form
+      setFormData(blankQuestion); 
       setImageFile(null);
       setImagePreview(null);
       
@@ -136,9 +127,7 @@ function AddQuestions() {
     }
   };
 
-  // --- 🚀 6. 'DONE' FUNCTION KO BHI UPDATE KIYA HAI ---
   const handleDone = async () => {
-    // Check if there is text in the main question field
     if (formData.questionText.trim() !== '') {
       setLoading(true); 
       setError('');
@@ -215,7 +204,6 @@ function AddQuestions() {
             </select>
           </div>
 
-          {/* --- 🚀 YEH RAHA FIX (EXAMPLE TEXT HATA DIYA) 🚀 --- */}
           <div>
             <label htmlFor="questionText" className="block text-lg font-medium text-gray-700 mb-2">
               Question Text
@@ -229,7 +217,6 @@ function AddQuestions() {
               required
             />
           </div>
-          {/* --- End of Fix --- */}
 
           {formData.type === 'image' && (
             <div>
@@ -267,25 +254,30 @@ function AddQuestions() {
             </div>
           )}
           
+          {/* --- 🚀 YEH RAHA ALIGNMENT FIX 🚀 --- */}
+          {/* Options Grid (Order 1, 2, 3, 4) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="option1" className="block text-md font-medium text-gray-700 mb-2">Option 1</label>
               <input type="text" id="option1" name="option1" value={formData.option1} onChange={handleChange} placeholder="Option 1...." className="w-full p-3 border border-gray-200 bg-gray-50 rounded-lg" required />
             </div>
             <div>
-              <label htmlFor="option3" className="block text-md font-medium text-gray-700 mb-2">Option 3</label>
-              <input type="text" id="option3" name="option3" value={formData.option3} onChange={handleChange} placeholder="Option 3...." className="w-full p-3 border border-gray-200 bg-gray-50 rounded-lg" required />
-            </div>
-            <div>
               <label htmlFor="option2" className="block text-md font-medium text-gray-700 mb-2">Option 2</label>
               <input type="text" id="option2" name="option2" value={formData.option2} onChange={handleChange} placeholder="Option 2...." className="w-full p-3 border border-gray-200 bg-gray-50 rounded-lg" required />
+            </div>
+            <div>
+              <label htmlFor="option3" className="block text-md font-medium text-gray-700 mb-2">Option 3</label>
+              <input type="text" id="option3" name="option3" value={formData.option3} onChange={handleChange} placeholder="Option 3...." className="w-full p-3 border border-gray-200 bg-gray-50 rounded-lg" required />
             </div>
             <div>
               <label htmlFor="option4" className="block text-md font-medium text-gray-700 mb-2">Option 4</label>
               <input type="text" id="option4" name="option4" value={formData.option4} onChange={handleChange} placeholder="Option 4...." className="w-full p-3 border border-gray-200 bg-gray-50 rounded-lg" required />
             </div>
           </div>
+          {/* --- End of Fix --- */}
+
           
+          {/* Correct Answer & Score */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="correctAnswer" className="block text-md font-medium text-gray-700 mb-2">Correct Answer</label>
@@ -318,7 +310,7 @@ function AddQuestions() {
           <button 
             type="submit"
             disabled={loading || uploading}
-            className="w-full mt-6 bg-white text-gray-800 px-5 py-3 rounded-lg font-medium hover:bg-gray-100 shadow-sm border border-gray-200 flex items-center justify-center gap-2"
+            className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md disabled:bg-gray-400"
           >
             <FiPlus />
             {loading ? 'Saving...' : (uploading ? 'Uploading Image...' : 'Add Question')}

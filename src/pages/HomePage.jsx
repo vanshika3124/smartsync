@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // <-- 1. IMPORT useAuth
+import { useAuth } from '../context/AuthContext'; 
 import {
   FaChevronLeft,
   FaChevronRight,
@@ -9,14 +9,13 @@ import {
   FaArrowRight,
 } from 'react-icons/fa';
 
-// --- 2. Hero Section Component (UPDATED) ---
+// --- (HeroSection, StartTeachingSection, HowToTeachSection components unchanged) ---
 const HeroSection = () => {
-  const { isLoggedIn } = useAuth(); // <-- 2. Get login state
-  // 3. Set links based on login state
+  const { isLoggedIn } = useAuth(); 
   const linkTo = isLoggedIn ? "/dashboard" : "/login"; 
 
   return (
-    <section className="bg-[#F0F5FF] py-20 px-6 md:px-12">
+    <section className="bg-[#D5E6F5] py-20 px-6 md:px-12">
       <div className="max-w-7xl mx-auto">
         <div className="grid md:grid-cols-2 items-center gap-12">
           <div className="text-left">
@@ -27,13 +26,12 @@ const HeroSection = () => {
               Making Learning Smarter, Faster, and More Connected Than Ever Before
             </p>
             <Link 
-              to={linkTo} // <-- 4. Use dynamic link
-              className="bg-teal-500 text-white px-10 py-4 rounded-full font-semibold text-lg hover:bg-teal-600 transition-colors shadow-lg"
+              to={linkTo} 
+              className="bg-emerald-500 text-white px-10 py-4 rounded-full font-semibold text-lg hover:bg-teal-600 transition-colors shadow-lg"
             >
               {isLoggedIn ? "Go to Dashboard" : "Go to classroom"}
             </Link>
           </div>
-          {/* ... (rest of the component) ... */}
           <div className="flex justify-center">
             <img 
               src="/photos/hero-image.png" 
@@ -43,21 +41,21 @@ const HeroSection = () => {
           </div>
         </div>
         <div className="mt-24 grid md:grid-cols-3 gap-8">
-          <div className="bg-white p-8 rounded-2xl shadow-lg text-left transition-transform hover:scale-105 border border-gray-100">
+          <div className="bg-white p-8 rounded-2xl shadow-lg text-left transition-transform hover:scale-105 border border-black-100">
             <img src="/photos/hero-1.png" alt="Real time quizzes" className="w-16 h-16 mb-5" />
             <h3 className="font-bold text-xl text-gray-900 mb-3">Real time quizzes</h3>
             <p className="text-gray-600 text-sm">
               Live quiz sessions with instant feedback and timer-based questions.
             </p>
           </div>
-          <div className="bg-white p-8 rounded-2xl shadow-lg text-left transition-transform hover:scale-105 border border-gray-100">
+          <div className="bg-white p-8 rounded-2xl shadow-lg text-left transition-transform hover:scale-105 border border-black-100">
             <img src="/photos/hero-2.png" alt="ML Analytics" className="w-16 h-16 mb-5" />
             <h3 className="font-bold text-xl text-gray-900 mb-3">ML Analytics</h3>
             <p className="text-gray-600 text-sm">
               Insights into student performance and learning patterns.
             </p>
           </div>
-          <div className="bg-white p-8 rounded-2xl shadow-lg text-left transition-transform hover:scale-105 border border-gray-100">
+          <div className="bg-white p-8 rounded-2xl shadow-lg text-left transition-transform hover:scale-105 border border-black-100">
             <img src="/photos/hero-3.png" alt="Easy Management" className="w-16 h-16 mb-5" />
             <h3 className="font-bold text-xl text-gray-900 mb-3">Easy Management</h3>
             <p className="text-gray-600 text-sm">
@@ -69,30 +67,26 @@ const HeroSection = () => {
     </section>
   );
 };
-
-// --- 3. Start Teaching Section Component (UPDATED) ---
 const StartTeachingSection = () => {
-  const { isLoggedIn } = useAuth(); // <-- 2. Get login state
-  // 3. Set links based on login state
+  const { isLoggedIn } = useAuth(); 
   const quizLink = isLoggedIn ? "/create-quiz" : "/login";
   const classroomLink = isLoggedIn ? "/create-classroom" : "/login";
-  const trackLink = isLoggedIn ? "/dashboard" : "/login"; // Go to dashboard to track progress
+  const trackLink = isLoggedIn ? "/dashboard" : "/login"; 
 
   return (
     <section className="bg-white py-20 px-6 md:px-12">
       <div className="max-w-4xl mx-auto text-center">
-        <h2 className="text-4xl font-bold text-gray-900 mb-2">Start <span className="text-blue-600">Teaching</span></h2>
+        <h2 className="text-4xl font-bold text-gray-900 mb-2">Start <span className="text-blue-700">Teaching</span></h2>
         <div className="grid md:grid-cols-3 gap-8 mt-12">
-          {/* 4. Use dynamic links */}
-          <Link to={quizLink} className="block bg-[#E6EAFE] p-8 rounded-2xl shadow-md hover:shadow-lg transition-shadow text-[#334D99]">
+          <Link to={quizLink} className="block bg-[#C6D0FF] p-8 rounded-2xl shadow-md hover:shadow-lg transition-shadow text-[#334D99]">
             <img src="/photos/start-quiz.png" alt="Create a quiz" className="w-14 h-14 mx-auto mb-4" />
             <h3 className="font-semibold text-xl">create a quiz</h3>
           </Link>
-          <Link to={classroomLink} className="block bg-[#E5F8EE] p-8 rounded-2xl shadow-md hover:shadow-lg transition-shadow text-[#00664F]">
+          <Link to={classroomLink} className="block bg-[#C9FBEF] p-8 rounded-2xl shadow-md hover:shadow-lg transition-shadow text-[#00664F]">
             <img src="/photos/start-classroom.png" alt="Go to classroom" className="w-14 h-14 mx-auto mb-4" />
             <h3 className="font-semibold text-xl">Create classroom</h3>
           </Link>
-          <Link to={trackLink} className="block bg-[#FFF0E7] p-8 rounded-2xl shadow-md hover:shadow-lg transition-shadow text-[#994A1A]">
+          <Link to={trackLink} className="block bg-[#FFDBC6] p-8 rounded-2xl shadow-md hover:shadow-lg transition-shadow text-[#994A1A]">
             <img src="/photos/start-track.png" alt="Track progress" className="w-14 h-14 mx-auto mb-4" />
             <h3 className="font-semibold text-xl">Track progress</h3>
           </Link>
@@ -101,11 +95,9 @@ const StartTeachingSection = () => {
     </section>
   );
 };
-
-// --- 4. How to Teach Section Component (UPDATED) ---
 const HowToTeachSection = () => {
-  const { isLoggedIn } = useAuth(); // <-- 2. Get login state
-  const linkTo = isLoggedIn ? "/dashboard" : "/login"; // <-- 3. Set link
+  const { isLoggedIn } = useAuth(); 
+  const linkTo = isLoggedIn ? "/dashboard" : "/login"; 
   
   const steps = [
     "Sign in to your SmartSync account",
@@ -132,8 +124,8 @@ const HowToTeachSection = () => {
               ))}
             </ol>
             <Link 
-              to={linkTo} // <-- 4. Use dynamic link
-              className="mt-8 inline-block bg-teal-500 text-white px-8 py-3 rounded-full font-semibold text-lg hover:bg-teal-600 transition-colors shadow-lg"
+              to={linkTo} 
+              className="mt-8 inline-block bg-emerald-500 text-white px-8 py-3 rounded-full font-semibold text-lg hover:bg-teal-600 transition-colors shadow-lg"
             >
               {isLoggedIn ? "Go to Dashboard" : "Go to classroom"}
             </Link>
@@ -151,13 +143,12 @@ const HowToTeachSection = () => {
   );
 };
 
-// --- (ReviewsSection, FaqSection, BenefitsAndStatsSection components are unchanged) ---
-// ... (Copy-paste them from your original file) ...
+// --- (Reviews data and Stars component unchanged) ---
 const reviewsData = [
   { name: 'Ms. A. Kumar', title: 'Mathematics Teacher', text: "SmartSync has truly revolutionised the way I run my classroom. I can roll out a quiz in seconds, track student responses live, and instantly recognise who needs help. The analytics dashboard is a god-send — no more guessing which topic needs revisiting.", img: 'https://api.uifaces.co/faces/twitter/kulkain/128.jpg', time: "3 months ago", stars: 4 },
   { name: 'Mr. Sunil Rao', title: 'Senior Secondary School', text: "As a senior educator, I value tools that just work. SmartSync impressed me with how intuitive it was to set up, how quickly my students picked it up, and how it seamlessly fits in both online and in-class use. Highly recommended!", img: 'https://api.uifaces.co/faces/twitter/holdenweb/128.jpg', time: "2 weeks ago", stars: 5 },
   { name: 'Ms. Priya Shah', title: 'English Department', text: "My students actually look forward to using SmartSync now — the quizzes are engaging, the feedback is instantaneous, and I love how I can upload my own notes and course material in one place. It’s made teaching more efficient and interactive.", img: 'https://api.uifaces.co/faces/twitter/adellecharles/128.jpg', time: "1 month ago", stars: 5 },
-  { name: 'Mr. S. Chen', title: 'Physics Department', text: 'The real-time quiz feature is fantastic for immediate feedback. Lifesaver for my classroom.', img: 'https_://api.uifaces.co/faces/twitter/IS_Cem/128.jpg', time: "2 months ago", stars: 4 },
+  { name: 'Mr. S. Chen', title: 'Physics Department', text: 'The real-time quiz feature is fantastic for immediate feedback. Lifesaver for my classroom.', img: 'https://api.uifaces.co/faces/twitter/IS_Cem/128.jpg', time: "2 months ago", stars: 4 },
 ];
 const Stars = ({ count = 5 }) => {
   return (
@@ -171,20 +162,35 @@ const Stars = ({ count = 5 }) => {
     </div>
   );
 };
+
+// --- 🚀🚀 YEH RAHA AAPKA FIXED ReviewCard 🚀🚀 ---
 const ReviewCard = ({ name, title, text, img, time, stars, borderColor }) => (
-  <div className="bg-white p-6 rounded-2xl shadow-lg min-w-[350px] max-w-sm mx-4 flex-shrink-0"> 
-    <div className="flex items-center mb-4">
-      <img src={img} alt={name} className={`w-16 h-16 rounded-full border-4 ${borderColor}`} />
-      <div className="ml-4">
-        <h3 className="font-bold text-lg text-gray-900">{name}</h3>
-        <p className="text-sm text-gray-500">{title}</p>
+  // 1. Added h-full, flex, flex-col
+  <div className="bg-white p-6 rounded-2xl shadow-lg h-full flex flex-col"> 
+    
+    {/* Top Part (Header) */}
+    <div> 
+      <div className="flex items-center mb-4">
+        <img src={img} alt={name} className={`w-16 h-16 rounded-full border-4 ${borderColor}`} />
+        <div className="ml-4">
+          <h3 className="font-bold text-lg text-gray-900">{name}</h3>
+          <p className="text-sm text-gray-500">{title}</p>
+        </div>
       </div>
+      <Stars count={stars} />
     </div>
-    <Stars count={stars} />
-    <p className="text-gray-600 my-4 text-sm leading-relaxed">{text}</p>
+
+    {/* 2. Added flex-1 (ya flex-grow) taaki yeh space fill kare */}
+    <p className="text-gray-600 my-4 text-sm leading-relaxed flex-1">{text}</p>
+    
+    {/* Bottom Part (Time) */}
     <p className="text-right text-xs text-gray-400">{time}</p>
   </div>
 );
+// --- End of Fix ---
+
+
+// --- (ReviewsSection is unchanged) ---
 function ReviewsSection() {
   const [current, setCurrent] = useState(0);
   const cardOffset = 350 + 32; 
@@ -192,18 +198,28 @@ function ReviewsSection() {
   const prevReview = () => { setCurrent(prev => (prev === 0 ? reviewsData.length - 1 : prev - 1)); };
   const borderColors = ['border-blue-400', 'border-yellow-400', 'border-red-400', 'border-purple-400'];
   return (
-    <section className="py-20 px-6 bg-[#F0F5FF]"> 
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16">
+    <section className="py-20 px-6 bg-[#D5E6F5]">
+      <h2 className="text-4xl font-bold mb-12 text-gray-800 text-center">
+        Reviews from our <span className="text-blue-700">members</span>
+      </h2>
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-8">
         <div className="w-full md:w-1/3 hidden md:block">
-          <img src="/photos/woman.png" alt="Teacher pointing to reviews" className="max-w-xs mx-auto" />
+          <img src="/photos/woman.png" alt="Teacher pointing to reviews" className="max-w-s mx-auto" />
         </div>
         <div className="w-full md:w-2/3">
-          <h2 className="text-4xl font-bold mb-12 text-gray-800 text-center md:text-left">Reviews from our members</h2>
           <div className="relative">
             <div className="overflow-hidden">
-              <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${current * cardOffset}px)` }}>
+              <div className="flex transition-transform duration-500 ease-in-out gap-8" style={{ transform: `translateX(-${current * cardOffset}px)` }}>
                 {reviewsData.map((review, index) => (
-                  <ReviewCard key={index} {...review} borderColor={borderColors[index % borderColors.length]} />
+                  <div 
+                    key={index} 
+                    className="flex-shrink-0 w-[350px]" // Yeh wrapper height ko stretch karega
+                  >
+                    <ReviewCard 
+                      {...review} 
+                      borderColor={borderColors[index % borderColors.length]} 
+                    />
+                  </div>
                 ))}
               </div>
             </div>
@@ -221,6 +237,8 @@ function ReviewsSection() {
     </section>
   );
 }
+
+// --- (FaqSection and BenefitsAndStatsSection components unchanged) ---
 const faqsData = [
   { q: "What is SmartSync and how does it help in classrooms?", a: "SmartSync is a smart classroom platform that connects teachers and students in real time. It helps teachers create quizzes, share notes, and analyze student performance — all in one place." },
   { q: "Is SmartSync free to use for teachers and students?", a: "Yes, SmartSync offers a robust free plan for all teachers and students. We also have premium plans with advanced features for larger schools or institutions." },
@@ -244,7 +262,7 @@ function FaqSection() {
   const [openIndex, setOpenIndex] = useState(0); 
   const toggleFAQ = (index) => { setOpenIndex(openIndex === index ? null : index); };
   return (
-    <section className="py-20 px-6 bg-[#F0F5FF]">
+    <section className="py-20 px-6 bg-[#D5E6F5]">
       <div className="max-w-4xl mx-auto text-center">
         <h2 className="text-4xl font-bold text-blue-600 mb-12">FAQs</h2>
         <div className="bg-white p-8 md:p-12 rounded-2xl shadow-lg text-left">
@@ -252,7 +270,7 @@ function FaqSection() {
             <FaqItem key={index} faq={faq} index={index} openIndex={openIndex} toggleFAQ={toggleFAQ} />
           ))}
         </div>
-       <Link to="/faqs" className="mt-12 inline-block bg-teal-500 text-white px-8 py-3 rounded-full font-semibold text-lg hover:bg-teal-600 transition-colors shadow-lg">
+       <Link to="/faqs" className="mt-12 inline-block bg-emerald-500 text-white px-8 py-3 rounded-full font-semibold text-lg hover:bg-teal-600 transition-colors shadow-lg">
           See all FAQs
           <FaArrowRight className="inline-block w-4 h-4 ml-2" />
         </Link>

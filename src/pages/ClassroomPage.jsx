@@ -2,21 +2,44 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { 
-  FiList, 
-  FiClock, 
   FiArrowUpRight, 
   FiUpload, 
   FiFileText, 
   FiTrash, 
-  FiAward, 
+  FiAward,
+  FiEdit // <-- 🚀 NAYA ICON ADD KIYA HAI
 } from 'react-icons/fi';
 import UploadNotesModal from '../components/UploadNotesModal'; 
 import AlertModal from '../components/AlertModal';
 
-// --- 🚀🚀 YEH HAI AAPKA FIXED QUIZCARD 🚀🚀 ---
+// --- 🚀 SKELETON LOADER (Unchanged) ---
+const ClassroomPageSkeleton = () => (
+  <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#F0F7FF' }}>
+    <div className="mb-8">
+      <div className="h-10 bg-gray-200 rounded-md w-3/4 mb-3 animate-pulse"></div>
+      <div className="h-6 bg-gray-200 rounded-md w-1/2 animate-pulse"></div>
+    </div>
+    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 mb-8 h-32 animate-pulse"></div>
+    <section className="mb-8">
+      <div className="h-8 bg-gray-200 rounded-md w-1/3 mb-6 animate-pulse"></div>
+      <div className="bg-white p-6 rounded-2xl shadow-lg h-32 animate-pulse"></div>
+    </section>
+    <section className="mb-12">
+      <div className="h-8 bg-gray-200 rounded-md w-1/4 mb-6 animate-pulse"></div>
+      <div className="bg-white p-6 rounded-2xl shadow-lg h-40 animate-pulse"></div>
+    </section>
+    <section>
+      <div className="h-8 bg-gray-200 rounded-md w-1/3 mb-6 animate-pulse"></div>
+      <div className="bg-white p-6 rounded-2xl shadow-lg h-48 animate-pulse"></div>
+    </section>
+  </main>
+);
+
+// --- 🚀🚀 YEH HAI AAPKA NAYA QUIZCARD (Design v3) 🚀🚀 ---
 const QuizCard = ({ quiz, onDelete }) => (
   <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
-    {/* Delete Icon */}
+    
+    {/* Delete Button (same) */}
     <div className="absolute top-6 right-6 flex items-center gap-2">
       <button
         onClick={(e) => {
@@ -29,34 +52,51 @@ const QuizCard = ({ quiz, onDelete }) => (
         <FiTrash className="w-4 h-4" />
       </button>
     </div>
-    <div className="mb-4">
+    
+    {/* Title */}
+    <h3 className="font-bold text-2xl text-gray-900 pr-10 mb-6">
+      {quiz.title}
+    </h3>
+    
+    {/* Question count aur Time (Hata diya gaya) */}
+
+    {/* Footer Bar with Links */}
+    <div className="bg-gray-50 p-4 rounded-lg flex items-center justify-between mt-4">
+      
+      {/* "VIEW / EDIT" LINK */}
       <Link 
         to={`/quiz/${quiz._id}`} 
-        className="font-bold text-2xl text-gray-900 pr-20 hover:text-blue-600 hover:underline"
+        className="flex items-center gap-1.5 text-gray-700 font-semibold hover:text-blue-600"
       >
-        {quiz.title}
+        <FiEdit className="w-4 h-4" /> 
+        View / Edit
       </Link>
-    </div>
-    
-    <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-gray-600 text-sm mb-6">
       
-      {/* --- 🚀 YEH RAHA FIX (Backend se 'questionCount' aa raha hai) 🚀 --- */}
-      <span className="flex items-center gap-1.5">
-        <FiList className="w-4 h-4" />{quiz.questionCount || 0} questions
-      </span>
-      {/* --- End of Fix --- */}
-
-      <span className="flex items-center gap-1.5"><FiClock className="w-4 h-4" />{quiz.durationMinutes || 0} minutes</span>
-    </div>
-    
-    <div className="bg-green-50 p-4 rounded-lg flex items-center justify-end">
-      <Link to={`/quiz/${quiz._id}/analysis`} className="flex items-center gap-1.5 text-blue-600 font-medium hover:underline">
-        Check analysis <FiArrowUpRight className="w-4 h-4" />
+      {/* "CHECK ANALYSIS" LINK */}
+      <Link 
+        to={`/quiz/${quiz._id}/analysis`} 
+        className="flex items-center gap-1.5 text-blue-600 font-semibold hover:underline"
+      >
+        Check analysis 
+        <FiArrowUpRight className="w-4 h-4" />
       </Link>
     </div>
   </div>
 );
 // --- End of Fix ---
+
+// --- 🚀 NAYA SKELETON CARD (LOADING QUIZZES KE LIYE) 🚀 ---
+const SkeletonQuizCard = () => (
+  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 animate-pulse">
+    <div className="h-8 bg-gray-200 rounded w-3/4 mb-10"></div>
+    <div className="bg-gray-50 p-4 rounded-lg flex items-center justify-between h-14">
+        <div className="h-5 bg-gray-200 rounded-lg w-28"></div>
+        <div className="h-5 bg-gray-200 rounded-lg w-32"></div>
+    </div>
+  </div>
+);
+// --- End of Skeleton ---
+
 
 const NoteItem = ({ note }) => (
   <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white">
@@ -131,7 +171,6 @@ function ClassroomPage() {
     setLoadingQuizzes(true);
     setQuizError(null);
     try {
-      // Yeh API ab 'questionCount' bhej raha hai
       const quizRes = await api.get(`/api/quiz/classroom/${classroomId}`);
       if (quizRes.data && Array.isArray(quizRes.data.quizzes)) {
           setQuizzes(quizRes.data.quizzes);
@@ -201,7 +240,7 @@ function ClassroomPage() {
   };
 
   // --- Render Logic ---
-  if (loadingClass) return <p className="p-10 text-center">Loading classroom...</p>;
+  if (loadingClass) return <ClassroomPageSkeleton />;
   if (classError) return <p className="p-10 text-center text-red-500">{classError}</p>;
   if (!classroom) return <p className="p-10 text-center text-red-500">Classroom not found.</p>;
 
@@ -241,8 +280,6 @@ function ClassroomPage() {
           </div>
         </div>
 
-        {/* --- "Future Score Predictor" Section Hata Diya Hai --- */}
-
         <section className="mb-8">
           <h2 className="text-3xl font-semibold text-gray-800 mb-6">Smart Leaderboard</h2>
           <div className="bg-white p-6 rounded-2xl shadow-lg">
@@ -256,7 +293,14 @@ function ClassroomPage() {
         
         <section className="mb-12">
           <h2 className="text-3xl font-semibold text-gray-800 mb-6">Quizzes</h2>
-          {loadingQuizzes && <p className="text-gray-500">Loading quizzes...</p>}
+          
+          {/* --- 🚀 QUIZ LOADING/ERROR/LIST LOGIC UPDATE --- */}
+          {loadingQuizzes && (
+            <div className="space-y-6">
+              <SkeletonQuizCard />
+              <SkeletonQuizCard />
+            </div>
+          )}
           {quizError && <p className="text-red-500">{quizError}</p>}
           <div className="space-y-6">
             {!loadingQuizzes && !quizError && quizzes.length > 0 && (
@@ -271,6 +315,8 @@ function ClassroomPage() {
               <p>No quizzes created for this class yet.</p>
             )}
           </div>
+          {/* --- End of Fix --- */}
+
         </section>
 
         <section>

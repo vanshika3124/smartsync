@@ -104,7 +104,7 @@ function LoginForm({ showSignUp }) {
   };
 
   return (
-    <div className="flex-grow flex items-center justify-center p-4 md:p-12">
+    <div className="flex-grow flex items-center justify-center p-4 md:p-12 bg-[#CFE7F5]">
       <div className="flex flex-col md:flex-row w-full max-w-6xl items-center">
         <div className="md:w-1/2 p-6 flex justify-center">
           <img src="/photos/illustration.png" alt="Illustration" className="w-full max-w-lg" />
@@ -127,14 +127,14 @@ function LoginForm({ showSignUp }) {
               <input type="checkbox" id="remember" className="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
               <label htmlFor="remember" className="text-sm text-gray-600">remember me</label>
             </div>
-            <button type="submit" className="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors shadow-md">Login</button>
+            <button type="submit" className="w-full bg-emerald-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors shadow-md">Login</button>
             {message && (<p className="text-center text-sm font-medium text-red-600">{message}</p>)}
           </form>
           <div className="my-6 flex items-center"><div className="flex-grow border-t border-gray-300"></div><span className="mx-4 text-sm text-gray-500">Or continue with</span><div className="flex-grow border-t border-gray-300"></div></div>
           <div ref={googleButtonRef} className="flex justify-center w-full"></div>
           <p className="text-center text-sm text-gray-600 mt-6">
             Didn't have an account?{' '}
-            <Link to="/register" className="font-medium text-blue-600 hover:underline">
+            <Link to="/register" className="font-medium text-emerald-600 hover:underline">
               Create an account
             </Link>
           </p>

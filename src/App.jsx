@@ -14,11 +14,22 @@ import CreateClassroom from './pages/CreateClassroom';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import QuizAnalysisPage from './pages/QuizAnalysisPage'; 
-import QuizDetailsPage from './pages/QuizDetailsPage'; // <-- 1. ADD THIS IMPORT
+import QuizDetailsPage from './pages/QuizDetailsPage';
 
-import { Routes, Route } from 'react-router-dom';
+// --- 🚀 1. 'useLocation' IMPORT KIYA ---
+import { Routes, Route, useLocation } from 'react-router-dom';
 
 function App() {
+  // --- 🚀 2. CURRENT PAGE KA PATH CHECK KARNE KE LIYE ---
+  const location = useLocation();
+
+  // Yeh woh pages hain jahaan humein footer NAHI dikhana
+  const noFooterPaths = ['/login', '/register'];
+  
+  // Check karo ki current page inn paths mein hai ya nahi
+  const showFooter = !noFooterPaths.includes(location.pathname);
+  // --- End of Fix ---
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -40,7 +51,7 @@ function App() {
             <Route path="/settings" element={<SettingsPage />} />
             
             <Route path="/create-quiz" element={<CreateQuiz />} />
-            <Route path="/quiz/:quizId" element={<QuizDetailsPage />} /> {/* <-- 2. ADD THIS ROUTE */}
+            <Route path="/quiz/:quizId" element={<QuizDetailsPage />} />
             <Route path="/quiz/:quizId/add-questions" element={<AddQuestions />} />
             <Route path="/quiz/:quizId/analysis" element={<QuizAnalysisPage />} />
           </Route>
@@ -48,7 +59,9 @@ function App() {
         </Routes>
       </main>
       
-      <Footer /> 
+      {/* --- 🚀 3. FOOTER KO CONDITIONAL KAR DIYA --- */}
+      {/* Yeh ab sirf 'showFooter' true hone par dikhega */}
+      {showFooter && <Footer />} 
     </div>
   );
 }

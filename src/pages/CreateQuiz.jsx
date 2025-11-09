@@ -118,7 +118,7 @@ function CreateQuiz() {
 
   // Step 1: Show Create Form
   return (
-    <main className="flex-1 p-8 md:p-12 bg-blue-50 min-h-screen">
+    <main className="flex-1 p-8 md:p-12 bg-[#E2F1F9] min-h-screen">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900">Create a Quiz</h1>
         <p className="text-lg text-gray-600 mb-8">Build your quiz with custom questions and settings</p>
@@ -182,7 +182,7 @@ function CreateQuiz() {
           <button 
             type="submit"
             disabled={loading}
-            className="w-1/2 mx-auto block bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md disabled:bg-gray-400"
+            className="w-1/2 mx-auto block bg-[#1E40AF] text-white py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors shadow-md disabled:bg-gray-400"
           >
             {loading ? 'Creating...' : 'Create quiz'}
           </button>
