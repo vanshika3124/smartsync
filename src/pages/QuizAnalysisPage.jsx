@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
-import { FiUsers, FiCheckCircle, FiTrendingUp, FiClock, FiAward } from 'react-icons/fi';
+// --- 🚀 FIX: FiTrendingUp (Improving) icon hata diya hai ---
+import { FiUsers, FiCheckCircle, FiClock, FiAward } from 'react-icons/fi'; 
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -25,43 +26,32 @@ ChartJS.register(
   ArcElement
 );
 
-// --- 1. SKELETON LOADER COMPONENT ---
+// --- (Skeleton Loader is unchanged) ---
 const AnalysisSkeleton = () => (
   <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#F0F7FF' }}>
-    {/* Header Skeleton */}
     <div className="mb-8">
       <div className="h-10 bg-gray-200 rounded-md w-3/4 mb-3 animate-pulse"></div>
       <div className="h-6 bg-gray-200 rounded-md w-1/2 animate-pulse"></div>
     </div>
-    
-    {/* Tabs Skeleton */}
     <div className="flex border-b border-gray-300 mb-8">
       <div className="py-3 px-5 h-10 bg-gray-200 rounded-t-md w-24 animate-pulse"></div>
       <div className="py-3 px-5 h-10 bg-gray-200 rounded-t-md w-24 ml-2 animate-pulse"></div>
     </div>
-
-    {/* Stat Cards Skeleton */}
     <div className="h-8 bg-gray-200 rounded-md w-1/3 mb-6 animate-pulse"></div>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div className="bg-white p-6 rounded-2xl shadow-lg h-32 animate-pulse"></div>
+    {/* --- 🚀 FIX: Grid 4 se 3 columns ka kar diya --- */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"> 
       <div className="bg-white p-6 rounded-2xl shadow-lg h-32 animate-pulse"></div>
       <div className="bg-white p-6 rounded-2xl shadow-lg h-32 animate-pulse"></div>
       <div className="bg-white p-6 rounded-2xl shadow-lg h-32 animate-pulse"></div>
     </div>
-
-    {/* Smart Leaderboard Skeleton */}
     <div className="h-8 bg-gray-200 rounded-md w-1/3 mb-6 animate-pulse"></div>
     <div className="bg-white p-6 rounded-2xl shadow-lg h-48 mb-8 animate-pulse"></div>
-
-    {/* Bar Chart Skeleton */}
     <div className="bg-white p-6 rounded-2xl shadow-lg h-96 mb-8 animate-pulse"></div>
-
-    {/* Submissions Table Skeleton */}
     <div className="bg-white p-6 rounded-2xl shadow-lg h-64 animate-pulse"></div>
   </main>
 );
 
-// --- Stat Card ---
+// --- (Stat Card is unchanged) ---
 const StatCard = ({ title, value, icon, iconBg }) => (
   <div className="bg-white p-6 rounded-2xl shadow-lg">
     <div className="flex items-center gap-4">
@@ -76,7 +66,8 @@ const StatCard = ({ title, value, icon, iconBg }) => (
   </div>
 );
 
-// --- Leaderboard Item ---
+// --- 🚀 FIX: Leaderboard se 'Predicted Score' hata diya ---
+// (Backend se 'timeTaken' yahan nahi aata, toh hum N/A dikha rahe hain)
 const LeaderboardItem = ({ rank, student }) => (
   <div className="flex items-center justify-between p-4 border-b border-gray-100">
     <div className="flex items-center gap-4">
@@ -87,13 +78,13 @@ const LeaderboardItem = ({ rank, student }) => (
       </div>
     </div>
     <div className="text-right">
-      <p className="text-xl font-bold text-blue-600">{student.predictedScore.toFixed(2)}%</p>
-      <span className="text-sm text-gray-500">Predicted Score</span>
+      <p className="text-xl font-bold text-gray-400">N/A</p>
+      <span className="text-sm text-gray-500">Prediction</span>
     </div>
   </div>
 );
 
-// --- Submission Item (with Rank) ---
+// --- 🚀 FIX: Submission table mein 'Time Taken' add kiya ---
 const SubmissionItem = ({ submission, rank }) => {
   const getRankBadge = (rank) => {
     if (rank === 1) return '🥇';
@@ -101,6 +92,12 @@ const SubmissionItem = ({ submission, rank }) => {
     if (rank === 3) return '🥉';
     return rank;
   };
+
+  // Time Taken ko format karte hain (assuming seconds)
+  const timeTaken = submission.timeTaken;
+  const displayTime = (typeof timeTaken === 'number') 
+    ? `${timeTaken.toFixed(0)}s` // e.g., "30s"
+    : 'N/A';
 
   return (
     <tr className="border-b border-gray-200">
@@ -110,8 +107,9 @@ const SubmissionItem = ({ submission, rank }) => {
       <td className="py-3 px-4 font-medium text-gray-900">{submission.student.name}</td>
       <td className="py-3 px-4 text-gray-600">{submission.student.email}</td>
       <td className="py-3 px-4 font-semibold text-green-600">{submission.totalScore} pts</td>
+      {/* 'Predicted Score' ki jagah 'Time Taken' */}
       <td className="py-3 px-4 font-semibold text-blue-600">
-        {submission.predictedScore ? `${submission.predictedScore.toFixed(1)} pts` : 'N/A'}
+        {displayTime}
       </td>
     </tr>
   );
@@ -123,6 +121,7 @@ function QuizAnalysisPage() {
   const { quizId } = useParams();
   const [submissions, setSubmissions] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
+  const [quizDetails, setQuizDetails] = useState(null); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [leaderboardError, setLeaderboardError] = useState(null);
@@ -136,20 +135,30 @@ function QuizAnalysisPage() {
 
       const resultsPromise = api.get(`/api/quiz/${quizId}/results`);
       const leaderboardPromise = api.get(`/api/quiz/${quizId}/leaderboard`);
+      const quizDetailsPromise = api.get(`/api/quiz/${quizId}`); 
 
-      const [resultsRes, leaderboardRes] = await Promise.allSettled([
+      const [resultsRes, leaderboardRes, quizDetailsRes] = await Promise.allSettled([
         resultsPromise,
-        leaderboardPromise
+        leaderboardPromise,
+        quizDetailsPromise
       ]);
 
+      // 1. Results
       if (resultsRes.status === 'fulfilled' && resultsRes.value.data && Array.isArray(resultsRes.value.data.submissions)) {
-        const sortedSubmissions = resultsRes.value.data.submissions.sort((a, b) => b.totalScore - a.totalScore);
+        // --- 🚀 FIX: Ab hum 'timeTaken' ke saath sort kar rahe hain (pehle score, fir time) ---
+        const sortedSubmissions = resultsRes.value.data.submissions.sort((a, b) => {
+          if (b.totalScore !== a.totalScore) {
+            return b.totalScore - a.totalScore; // Pehle high score
+          }
+          return (a.timeTaken || 999) - (b.timeTaken || 999); // Fir low time
+        });
         setSubmissions(sortedSubmissions);
       } else {
         console.error("Failed to load results:", resultsRes.reason);
         setError("Failed to load submissions.");
       }
       
+      // 2. Leaderboard
       if (leaderboardRes.status === 'fulfilled' && leaderboardRes.value.data && Array.isArray(leaderboardRes.value.data.leaderboard)) {
         setLeaderboard(leaderboardRes.value.data.leaderboard);
       } else {
@@ -157,18 +166,34 @@ function QuizAnalysisPage() {
         setLeaderboardError("Failed to load leaderboard (API 404 or Error).");
       }
 
+      // 3. Quiz Details
+      if (quizDetailsRes.status === 'fulfilled' && quizDetailsRes.value.data && quizDetailsRes.value.data.quiz) {
+        setQuizDetails(quizDetailsRes.value.data.quiz);
+      } else {
+        console.error("Failed to load quiz details:", quizDetailsRes.reason);
+        setError(prev => prev ? prev + " & Failed to load quiz details." : "Failed to load quiz details.");
+      }
+
       setLoading(false);
     };
     fetchData();
   }, [quizId, navigate]);
 
+  // Graph data function (unchanged)
   const getChartData = () => {
+    let totalMarks = 0;
+    if (quizDetails && quizDetails.questions) {
+      totalMarks = quizDetails.questions.reduce((sum, q) => sum + (q.marks || 0), 0);
+    }
+    if (totalMarks === 0) totalMarks = 1; 
+
     const labels = submissions.map(sub => sub.student.name);
-    const data = submissions.map(sub => sub.totalScore); 
+    const data = submissions.map(sub => (sub.totalScore / totalMarks) * 100); 
+    
     return {
       labels,
       datasets: [{
-        label: 'Score',
+        label: 'Score (%)',
         data,
         backgroundColor: '#4A90E2',
         borderRadius: 5,
@@ -176,11 +201,22 @@ function QuizAnalysisPage() {
     };
   };
 
+  // Avg Score function (unchanged)
   const getAverageScore = () => {
     if (submissions.length === 0) return 0;
     const total = submissions.reduce((sum, sub) => sum + sub.totalScore, 0);
     return (total / submissions.length).toFixed(1);
   };
+  
+  // --- 🚀 NAYA FUNCTION: 'Avg Time' calculate karne ke liye ---
+  const getAverageTime = () => {
+    if (submissions.length === 0) return 'N/A';
+    const totalTime = submissions.reduce((sum, sub) => sum + (sub.timeTaken || 0), 0);
+    if (totalTime === 0) return 'N/A'; // Agar kisi ne bhi time nahi diya
+    const avg = totalTime / submissions.length;
+    return `${avg.toFixed(1)}s`; // e.g., "45.2s"
+  };
+  // --- End of Fix ---
 
   if (loading) return <AnalysisSkeleton />;
 
@@ -189,13 +225,11 @@ function QuizAnalysisPage() {
   return (
     <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#F0F7FF' }}>
       
-      {/* Header */}
+      {/* ... (Header and Tabs unchanged) ... */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900">Teachers dashboard</h1>
         <p className="text-lg text-gray-600">Welcome back, {JSON.parse(localStorage.getItem('user'))?.name || 'Teacher'}</p>
       </div>
-
-      {/* Tabs */}
       <div className="flex border-b border-gray-300 mb-8">
         <Link to="/dashboard" className="py-3 px-5 text-gray-600 font-medium">My Quizzes</Link>
         <span className="py-3 px-5 text-blue-600 font-semibold border-b-2 border-blue-600">Analytics</span>
@@ -203,8 +237,8 @@ function QuizAnalysisPage() {
 
       <h2 className="text-3xl font-semibold text-gray-800 mb-6">Performance Analysis</h2>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {/* --- 🚀 FIX: Stat Cards (3 columns) --- */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <StatCard 
           title="Total Submissions" 
           value={submissions.length}
@@ -217,21 +251,17 @@ function QuizAnalysisPage() {
           icon={<FiCheckCircle className="text-green-600" />}
           iconBg="bg-green-100"
         />
-        <StatCard 
-          title="Improving" 
-          value={"N/A"} 
-          icon={<FiTrendingUp className="text-yellow-600" />}
-          iconBg="bg-yellow-100"
-        />
+        {/* "Improving" card hata diya */}
         <StatCard 
           title="Avg Time/Question" 
-          value={"N/A"} 
+          value={getAverageTime()} // <-- Naya function call kiya
           icon={<FiClock className="text-purple-600" />}
           iconBg="bg-purple-100"
         />
       </div>
+      {/* --- End of Fix --- */}
 
-      {/* Smart Leaderboard */}
+      {/* --- 🚀 FIX: 'Smart Leaderboard' se 'Predicted Score' hata diya --- */}
       <section className="mb-8">
         <h2 className="text-3xl font-semibold text-gray-800 mb-6">Smart Leaderboard (Top 3 Predictions)</h2>
         <div className="bg-white p-6 rounded-2xl shadow-lg">
@@ -254,34 +284,37 @@ function QuizAnalysisPage() {
            )}
         </div>
       </section>
-
+      {/* --- End of Fix --- */}
       
-      {/* --- CHART SECTION (0-10 SCALE ADDED) --- */}
+      {/* --- (Chart section is unchanged) --- */}
       <div className="grid grid-cols-1 gap-6 mb-8">
         <div className="bg-white p-6 rounded-2xl shadow-lg">
-          <h3 className="font-semibold mb-4">Student Performance Distribution (Actual Scores)</h3>
+          <h3 className="font-semibold mb-4">Student Performance Distribution (Percentage %)</h3>
           <div className="h-96"> 
             <Bar 
               data={getChartData()} 
               options={{ 
                 plugins: { legend: { display: false } },
                 maintainAspectRatio: false,
-                // --- YEH RAHA AAPKA CHANGE ---
                 scales: {
                   y: {
                     beginAtZero: true,
                     min: 0,
-                    max: 10
+                    max: 100, 
+                    ticks: {
+                      callback: function(value) {
+                        return value + '%'
+                      }
+                    }
                   }
                 }
-                // --- END OF CHANGE ---
               }} 
             />
           </div>
         </div>
       </div>
 
-      {/* --- ALL SUBMISSIONS TABLE (with Rank) --- */}
+      {/* --- 🚀 FIX: Table header change kiya --- */}
       <section className="bg-white p-6 rounded-2xl shadow-lg mb-8">
         <h3 className="font-semibold text-xl mb-4">Actual Quiz Results</h3>
         {error && !submissions.length && <p className="text-red-500">{error}</p>}
@@ -294,7 +327,7 @@ function QuizAnalysisPage() {
                   <th className="py-3 px-4 font-semibold text-gray-600">Student Name</th>
                   <th className="py-3 px-4 font-semibold text-gray-600">Email</th>
                   <th className="py-3 px-4 font-semibold text-gray-600">Actual Score</th>
-                  <th className="py-3 px-4 font-semibold text-gray-600">Predicted Score</th>
+                  <th className="py-3 px-4 font-semibold text-gray-600">Time Taken</th> {/* <-- Change kiya */}
                 </tr>
               </thead>
               <tbody>
@@ -312,6 +345,7 @@ function QuizAnalysisPage() {
           !loading && !error && <p>No submissions yet for this quiz.</p>
         )}
       </section>
+      {/* --- End of Fix --- */}
     </main>
   );
 }
