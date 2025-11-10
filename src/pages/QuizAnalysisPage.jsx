@@ -198,7 +198,7 @@ function QuizAnalysisPage() {
   if (error && submissions.length === 0) return <main className="flex-1 p-10 text-center text-red-500"><p>{error}</p></main>;
 
   return (
-    <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#F0F7FF' }}>
+    <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#E2F1F9' }}>
       
       {/* ... (Header and Tabs unchanged) ... */}
       <div className="mb-8">
@@ -236,7 +236,7 @@ function QuizAnalysisPage() {
         <div className="bg-white p-6 rounded-2xl shadow-lg">
            <div className="flex items-center gap-2 mb-4">
              <FiAward className="text-yellow-500" />
-             <h3 className="font-semibold text-xl">Top Predicted Performers</h3>
+             <h3 className="font-semibold text-xl">Top Performers</h3>
            </div>
            {loading && <p>Loading leaderboard...</p>}
            {leaderboardError && <p className="text-red-500">{leaderboardError}</p>}
