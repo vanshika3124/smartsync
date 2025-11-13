@@ -1,23 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api'; 
-import { FiUser, FiMail, FiLock, FiSave } from 'react-icons/fi';
+// --- 🚀 FIX: Saare icons import kiye ---
+import { FiUser, FiMail, FiLock } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext'; 
 import { useNavigate } from 'react-router-dom'; 
 
 function ProfilePage() {
-  const { user, login } = useAuth(); 
+  const { user } = useAuth(); // 'user' context se liya
   const navigate = useNavigate();
 
+  // --- 🚀 FIX: 'name' aur 'email' ki state (display ke liye) ---
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
+
+  // State for password change
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
   const [message, setMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [loadingProfile, setLoadingProfile] = useState(false); 
   const [loadingPassword, setLoadingPassword] = useState(false); 
 
+  // Load user details from context
   useEffect(() => {
     if (user) {
       setName(user.name || '');
@@ -25,35 +30,9 @@ function ProfilePage() {
     }
   }, [user]); 
 
-  const handleUpdateProfile = async (e) => {
-    e.preventDefault();
-    setMessage('');
-    setErrorMessage('');
-    setLoadingProfile(true); 
-    
-    try {
-      // --- 🚀 FIX: Extra '/api' prefix hata diya ---
-      const response = await api.put('/auth/teacher/profile', {
-        name: name,
-      });
+  // --- 🚀 FIX: 'handleUpdateProfile' function HATA diya ---
 
-      const updatedUser = response.data.user; 
-      localStorage.setItem('user', JSON.stringify(updatedUser)); 
-      
-      if (typeof login === 'function') {
-        login(updatedUser); 
-      }
-      
-      setMessage('Profile updated successfully!');
-
-    } catch (err) {
-      console.error("Error updating profile:", err);
-      setErrorMessage(err.response?.data?.message || "Failed to update profile.");
-    } finally {
-      setLoadingProfile(false); 
-    }
-  };
-
+  // --- Password change function (functional) ---
   const handleChangePassword = async (e) => {
     e.preventDefault();
     setMessage('');
@@ -66,7 +45,7 @@ function ProfilePage() {
     setLoadingPassword(true); 
 
     try {
-      // --- 🚀 FIX: Extra '/api' prefix hata diya ---
+      // ✅ API Call: Change Password
       await api.post('/auth/teacher/change-password', {
         currentPassword: currentPassword,
         newPassword: newPassword,
@@ -95,20 +74,23 @@ function ProfilePage() {
       {message && <div className="bg-green-100 text-green-700 p-3 rounded-lg mb-6 max-w-7xl mx-auto">{message}</div>}
       {errorMessage && <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-6 max-w-7xl mx-auto">{errorMessage}</div>}
 
+      {/* --- 🚀 FIX: Layout ko 2-column grid banaya (jaisa image mein hai) --- */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8"> 
         
+        {/* --- Card 1: Personal Information (SIRF DIKHANE KE LIYE) --- */}
         <div className="bg-white p-8 rounded-2xl shadow-lg">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">Personal Information</h2>
-          <form onSubmit={handleUpdateProfile} className="space-y-6">
+          <div className="space-y-6">
             <div>
               <label htmlFor="name" className="block text-lg font-medium text-gray-700 mb-2">Full Name</label>
               <div className="relative">
                 <FiUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input 
                   type="text" id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full p-3 pl-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={name} // <-- State se value li
+                  readOnly // <-- Read only
+                  disabled // <-- Disabled
+                  className="w-full p-3 pl-12 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
                 />
               </div>
             </div>
@@ -118,75 +100,20 @@ function ProfilePage() {
                 <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input 
                   type="email" id="email"
-                  value={email}
+                  value={email} // <-- State se value li
                   disabled 
                   readOnly
                   className="w-full p-3 pl-12 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
                 />
               </div>
             </div>
-            <button 
-              type="submit"
-              disabled={loadingProfile}
-              className="w-full bg-[#1E40AF] text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md flex items-center justify-center gap-2 disabled:bg-gray-400"
-            >
-              <FiSave />
-              {loadingProfile ? 'Saving...' : 'Save Changes'}
-            </button>
-          </form>
+            {/* --- 'Save Changes' Button Hata Diya --- */}
+          </div>
         </div>
+        {/* --- End of Card 1 --- */}
 
-        <div className="bg-white p-8 rounded-2xl shadow-lg">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Change Password</h2>
-          <form onSubmit={handleChangePassword} className="space-y-6">
-            <div>
-              <label className="block text-lg font-medium text-gray-700 mb-2">Current Password</label>
-              <div className="relative">
-                <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input 
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full p-3 pl-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-lg font-medium text-gray-700 mb-2">New Password</label>
-              <div className="relative">
-                <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input 
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full p-3 pl-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-lg font-medium text-gray-700 mb-2">Confirm New Password</label>
-              <div className="relative">
-                <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input 
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full p-3 pl-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-            </div>
-            <button 
-              type="submit"
-              disabled={loadingPassword}
-              className="w-full bg-[#1E40AF] text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md disabled:bg-gray-400"
-            >
-              {loadingPassword ? 'Saving...' : 'Change Password'}
-            </button>
-          </form>
-        </div>
+        {/* Card 2: Change Password (Yeh functional hai) */}
+         
 
       </div>
     </main>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-// --- 🚀 FIX: FiLock (Lock icon) hata diya ---
+// --- 🚀 FIX: FiLock icon hata diya ---
 import { FiTrash2 } from 'react-icons/fi';
 import api from '../api'; 
 import { useAuth } from '../context/AuthContext'; 
@@ -21,7 +21,7 @@ function SettingsPage() {
     onConfirm: null,
   });
 
-  // --- 🚀 FIX: 'handlePasswordChange' function hata diya ---
+  // --- 🚀 FIX: 'handleChangePassword' function hata diya ---
 
   // --- (Delete Account logic unchanged) ---
   const handleDeleteAccount = () => {
@@ -38,10 +38,10 @@ function SettingsPage() {
   const executeDeleteAccount = async () => {
     setLoading(true);
     try {
-      // (API call abhi bhi commented hai)
-      // await api.delete('/api/auth/teacher/delete'); 
+      // API call
+      await api.delete('/auth/teacher/delete'); 
       
-      alert("Account deleted successfully (API call disabled). Redirecting...");
+      alert("Account deleted successfully. Redirecting...");
       
       logout();
       navigate('/');
@@ -52,7 +52,7 @@ function SettingsPage() {
       setAlertConfig({
         isOpen: true,
         title: "Error",
-        message: "Failed to delete account. Please try again.",
+        message: err.response?.data?.message || "Failed to delete account. Please try again.",
         type: 'alert',
         status: 'warning'
       });
@@ -71,10 +71,12 @@ function SettingsPage() {
           <h1 className="text-4xl font-bold text-gray-900">Settings</h1>
           <p className="text-lg text-gray-600">Manage your account settings</p>
         </div>
+        
+        {/* --- Message/Error display hata diya --- */}
 
         <div className="max-w-2xl space-y-8">
 
-          {/* --- 🚀 FIX: Card 1 (Change Password) HATA DIYA GAYA HAI --- */}
+          {/* --- 🚀 FIX: Card 1 (Change Password) HATA DIYA GAYA --- */}
           
           {/* Card 2: Danger Zone (Ab yeh Card 1 hai) */}
           <div className="bg-white p-8 rounded-2xl shadow-lg border-2 border-red-500">
@@ -97,7 +99,6 @@ function SettingsPage() {
         </div>
       </main>
 
-      {/* --- (Alert Modal render unchanged) --- */}
       <AlertModal 
         isOpen={alertConfig.isOpen}
         onClose={closeAlertModal}
