@@ -64,13 +64,14 @@ function Navbar() {
   const dashboardLink = isLoggedIn ? "/dashboard" : "/login";
   const faqsLink = "/faqs";
   const isDashboardActive = location.pathname.startsWith('/dashboard');
+  
 
   return (
     <nav className="w-full bg-white shadow-sm py-4 px-6 md:px-12 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center h-full">
         <Link to="/" className="flex items-center gap-2">
           <img src="/photos/logo.png" alt="SmartSync Logo" className="h-10 w-10" />
-          <span className="text-2xl font-bold text-gray-800">SmartSync</span>
+          <span className="text-2xl font-bold text-[#1E40AF]">SmartSync</span>
         </Link>
         <div className="hidden md:flex items-center gap-8">
           <Link 

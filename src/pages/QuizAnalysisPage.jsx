@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
-// --- 🚀 FIX: FiClock icon hata diya hai ---
 import { FiUsers, FiCheckCircle, FiAward } from 'react-icons/fi'; 
 import { Bar } from 'react-chartjs-2';
 import {
@@ -28,7 +27,8 @@ ChartJS.register(
 
 // --- Skeleton Loader ---
 const AnalysisSkeleton = () => (
-  <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#F0F7FF' }}>
+  // --- 🚀 FIX: Padding mobile ke liye adjust ki ---
+  <main className="flex-1 p-6 md:p-10" style={{ backgroundColor: '#E2F1F9' }}>
     <div className="mb-8">
       <div className="h-10 bg-gray-200 rounded-md w-3/4 mb-3 animate-pulse"></div>
       <div className="h-6 bg-gray-200 rounded-md w-1/2 animate-pulse"></div>
@@ -38,7 +38,6 @@ const AnalysisSkeleton = () => (
       <div className="py-3 px-5 h-10 bg-gray-200 rounded-t-md w-24 ml-2 animate-pulse"></div>
     </div>
     <div className="h-8 bg-gray-200 rounded-md w-1/3 mb-6 animate-pulse"></div>
-    {/* --- 🚀 FIX: Grid 2 columns ka kar diya --- */}
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"> 
       <div className="bg-white p-6 rounded-2xl shadow-lg h-32 animate-pulse"></div>
       <div className="bg-white p-6 rounded-2xl shadow-lg h-32 animate-pulse"></div>
@@ -78,7 +77,7 @@ const LeaderboardItem = ({ rank, student }) => (
   </div>
 );
 
-// --- 🚀 FIX: SubmissionItem se 'Time Taken' hata diya ---
+// --- 🚀 FIX: SubmissionItem ko responsive banaya ---
 const SubmissionItem = ({ submission, rank }) => {
   const getRankBadge = (rank) => {
     if (rank === 1) return '🥇';
@@ -89,13 +88,13 @@ const SubmissionItem = ({ submission, rank }) => {
 
   return (
     <tr className="border-b border-gray-200">
-      <td className="py-3 px-4 font-bold text-gray-900 w-20 text-center">
+      {/* --- Padding kam kar di mobile ke liye --- */}
+      <td className="py-3 px-2 md:px-4 font-bold text-gray-900 w-16 text-center">
         {getRankBadge(rank)}
       </td>
-      <td className="py-3 px-4 font-medium text-gray-900">{submission.student.name}</td>
-      <td className="py-3 px-4 text-gray-600 hidden md:table-cell">{submission.student.email}</td>
-      <td className="py-3 px-4 font-semibold text-green-600">{submission.totalScore} pts</td>
-      {/* Time Taken column hata diya */}
+      <td className="py-3 px-2 md:px-4 font-medium text-gray-900">{submission.student.name}</td>
+      <td className="py-3 px-2 md:px-4 text-gray-600 hidden md:table-cell">{submission.student.email}</td>
+      <td className="py-3 px-2 md:px-4 font-semibold text-green-600">{submission.totalScore} pts</td>
     </tr>
   );
 };
@@ -131,9 +130,8 @@ function QuizAnalysisPage() {
 
       // 1. Results
       if (resultsRes.status === 'fulfilled' && resultsRes.value.data && Array.isArray(resultsRes.value.data.submissions)) {
-        // --- 🚀 FIX: Sorting se 'timeTaken' hata diya ---
         const sortedSubmissions = resultsRes.value.data.submissions.sort((a, b) => {
-          return b.totalScore - a.totalScore; // Sirf score se sort
+          return b.totalScore - a.totalScore; 
         });
         setSubmissions(sortedSubmissions);
       } else {
@@ -191,28 +189,28 @@ function QuizAnalysisPage() {
     return (total / submissions.length).toFixed(1);
   };
   
-  // --- 🚀 FIX: 'getAverageTime' function hata diya ---
-
   if (loading) return <AnalysisSkeleton />;
 
   if (error && submissions.length === 0) return <main className="flex-1 p-10 text-center text-red-500"><p>{error}</p></main>;
 
   return (
-    <main className="flex-1 p-8 md:p-12" style={{ backgroundColor: '#E2F1F9' }}>
+    // --- 🚀 FIX: Padding mobile ke liye adjust ki ---
+    <main className="flex-1 p-6 md:p-10" style={{ backgroundColor: '#E2F1F9' }}>
       
-      {/* ... (Header and Tabs unchanged) ... */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900">Teachers dashboard</h1>
-        <p className="text-lg text-gray-600">Welcome back, {JSON.parse(localStorage.getItem('user'))?.name || 'Teacher'}</p>
+        {/* --- 🚀 FIX: Responsive font size --- */}
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Teachers dashboard</h1>
+        <p className="text-base md:text-lg text-gray-600">Welcome back, {JSON.parse(localStorage.getItem('user'))?.name || 'Teacher'}</p>
       </div>
       <div className="flex border-b border-gray-300 mb-8">
         <Link to="/dashboard" className="py-3 px-5 text-gray-600 font-medium">My Quizzes</Link>
         <span className="py-3 px-5 text-blue-600 font-semibold border-b-2 border-blue-600">Analytics</span>
       </div>
 
-      <h2 className="text-3xl font-semibold text-gray-800 mb-6">Performance Analysis</h2>
+      {/* --- 🚀 FIX: Responsive font size --- */}
+      <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 mb-6">Performance Analysis</h2>
 
-      {/* --- 🚀 FIX: Stat Cards (2 columns) --- */}
+      {/* --- (Stat Cards 2 columns - unchanged) --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <StatCard 
           title="Total Submissions" 
@@ -226,17 +224,16 @@ function QuizAnalysisPage() {
           icon={<FiCheckCircle className="text-green-600" />}
           iconBg="bg-green-100"
         />
-        {/* "Avg Time" card hata diya */}
       </div>
-      {/* --- End of Fix --- */}
 
       {/* (Smart Leaderboard section is unchanged) */}
       <section className="mb-8">
-        <h2 className="text-3xl font-semibold text-gray-800 mb-6">Smart Leaderboard (Top 3)</h2>
+        {/* --- 🚀 FIX: Responsive font size --- */}
+        <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 mb-6">Smart Leaderboard (Top 3)</h2>
         <div className="bg-white p-6 rounded-2xl shadow-lg">
            <div className="flex items-center gap-2 mb-4">
              <FiAward className="text-yellow-500" />
-             <h3 className="font-semibold text-xl">Top Performers</h3>
+             <h3 className="font-semibold text-lg md:text-xl">Top Performers</h3>
            </div>
            {loading && <p>Loading leaderboard...</p>}
            {leaderboardError && <p className="text-red-500">{leaderboardError}</p>}
@@ -257,7 +254,8 @@ function QuizAnalysisPage() {
       {/* --- (Chart section is unchanged) --- */}
       <div className="grid grid-cols-1 gap-6 mb-8">
         <div className="bg-white p-6 rounded-2xl shadow-lg">
-          <h3 className="font-semibold mb-4">Student Performance Distribution (Percentage %)</h3>
+          {/* --- 🚀 FIX: Responsive font size --- */}
+          <h3 className="font-semibold text-lg md:text-xl mb-4">Student Performance Distribution (Percentage %)</h3>
           <div className="h-96"> 
             <Bar 
               data={getChartData()} 
@@ -282,20 +280,21 @@ function QuizAnalysisPage() {
         </div>
       </div>
 
-      {/* --- 🚀 FIX: Table header se 'Time Taken' hata diya --- */}
+      {/* --- 🚀 FIX: Table ko responsive banaya --- */}
       <section className="bg-white p-6 rounded-2xl shadow-lg mb-8">
-        <h3 className="font-semibold text-xl mb-4">Actual Quiz Results</h3>
+        {/* --- 🚀 FIX: Responsive font size --- */}
+        <h3 className="font-semibold text-lg md:text-xl mb-4">Actual Quiz Results</h3>
         {error && !submissions.length && <p className="text-red-500">{error}</p>}
         {submissions.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full text-left min-w-[500px]"> {/* min-width kam kar diya */}
+            {/* --- 🚀 FIX: min-width hata diya --- */}
+            <table className="w-full text-left">
               <thead>
                 <tr className="border-b-2 border-gray-200">
-                  <th className="py-3 px-4 font-semibold text-gray-600 w-20 text-center">Rank</th>
-                  <th className="py-3 px-4 font-semibold text-gray-600">Student Name</th>
-                  <th className="py-3 px-4 font-semibold text-gray-600 hidden md:table-cell">Email</th>
-                  <th className="py-3 px-4 font-semibold text-gray-600">Actual Score</th>
-                  {/* Time Taken th hata diya */}
+                  <th className="py-3 px-2 md:px-4 font-semibold text-gray-600 w-16 text-center">Rank</th>
+                  <th className="py-3 px-2 md:px-4 font-semibold text-gray-600">Student Name</th>
+                  <th className="py-3 px-2 md:px-4 font-semibold text-gray-600 hidden md:table-cell">Email</th>
+                  <th className="py-3 px-2 md:px-4 font-semibold text-gray-600">Actual Score</th>
                 </tr>
               </thead>
               <tbody>

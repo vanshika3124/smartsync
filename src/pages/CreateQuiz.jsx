@@ -96,7 +96,7 @@ function CreateQuiz() {
   if (createdQuiz) {
     // const quizIdToShow = createdQuiz._id || createdQuiz.quizId || createdQuiz.id; // Iski zaroorat nahi
     return (
-      <main className="flex-1 p-8 md:p-12 bg-blue-50 min-h-screen flex items-center justify-center">
+      <main className="flex-1 p-8 md:p-12 bg-[#E2F1F9] min-h-screen flex items-center justify-center">
         <div className="bg-white p-8 md:p-12 rounded-2xl shadow-lg max-w-lg w-full text-center">
           <h2 className="text-2xl font-semibold text-gray-800 mb-8"> {/* Margin badha diya */}
             Your quiz has been successfully created

@@ -1,58 +1,56 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api'; // <-- 1. IMPORT 'api' INSTEAD OF 'axios'
+import api from '../api'; 
 import { FiUser, FiMail, FiLock, FiSave } from 'react-icons/fi';
+import { useAuth } from '../context/AuthContext'; 
+import { useNavigate } from 'react-router-dom'; 
 
 function ProfilePage() {
-  // State for user details
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const { user, login } = useAuth(); 
+  const navigate = useNavigate();
 
-  // State for password change
+  const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
   const [message, setMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [loadingProfile, setLoadingProfile] = useState(false); 
+  const [loadingPassword, setLoadingPassword] = useState(false); 
 
-  // Load user details from localStorage on page load
   useEffect(() => {
-    try {
-      const storedUser = JSON.parse(localStorage.getItem('user'));
-      if (storedUser) {
-        setName(storedUser.name || '');
-        setEmail(storedUser.email || '');
-      }
-    } catch (e) {
-      console.error("Failed to load user details", e);
+    if (user) {
+      setName(user.name || '');
+      setEmail(user.email || '');
     }
-  }, []);
+  }, [user]); 
 
-  // --- 2. REMOVED API_URL, JWT_TOKEN, and apiConfig ---
-
-  // Form Handlers
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setMessage('');
     setErrorMessage('');
+    setLoadingProfile(true); 
     
     try {
-      // --- 3. Use 'api.put' (or .post) ---
-      // TODO: Confirm this API endpoint (e.g., PUT /api/auth/teacher/profile)
-      const response = await api.put('/api/auth/teacher/profile', {
+      // --- 🚀 FIX: Extra '/api' prefix hata diya ---
+      const response = await api.put('/auth/teacher/profile', {
         name: name,
       });
 
-      // Update localStorage with the new user details from response
-      const updatedUser = response.data.user; // Assuming API returns { user: {...} }
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      setName(updatedUser.name); // Update state just in case
+      const updatedUser = response.data.user; 
+      localStorage.setItem('user', JSON.stringify(updatedUser)); 
+      
+      if (typeof login === 'function') {
+        login(updatedUser); 
+      }
       
       setMessage('Profile updated successfully!');
 
     } catch (err) {
       console.error("Error updating profile:", err);
       setErrorMessage(err.response?.data?.message || "Failed to update profile.");
+    } finally {
+      setLoadingProfile(false); 
     }
   };
 
@@ -64,11 +62,12 @@ function ProfilePage() {
       setErrorMessage("New passwords don't match!");
       return;
     }
+    
+    setLoadingPassword(true); 
 
     try {
-      // --- 3. Use 'api.post' ---
-      // TODO: Confirm this API endpoint (e.g., POST /api/auth/teacher/change-password)
-      await api.post('/api/auth/teacher/change-password', {
+      // --- 🚀 FIX: Extra '/api' prefix hata diya ---
+      await api.post('/auth/teacher/change-password', {
         currentPassword: currentPassword,
         newPassword: newPassword,
       });
@@ -81,25 +80,23 @@ function ProfilePage() {
     } catch (err) {
       console.error("Error changing password:", err);
       setErrorMessage(err.response?.data?.message || "Failed to change password.");
+    } finally {
+      setLoadingPassword(false); 
     }
   };
 
   return (
-    // --- 🚀 FIX 1: Background color add kiya ---
     <main className="flex-1 p-8 md:p-12 bg-[#E2F1F9]">
-      {/* --- 🚀 FIX 2: Text color white kiya (readability ke liye) --- */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-black">Your Profile</h1>
-        <p className="text-lg text-black-200">Manage your personal information and password</p>
+        <h1 className="text-4xl font-bold text-gray-900">Your Profile</h1>
+        <p className="text-lg text-gray-600">Manage your personal information and password</p>
       </div>
 
-      {/* Success/Error Messages */}
-      {message && <div className="bg-green-100 text-green-700 p-3 rounded-lg mb-6">{message}</div>}
-      {errorMessage && <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-6">{errorMessage}</div>}
+      {message && <div className="bg-green-100 text-green-700 p-3 rounded-lg mb-6 max-w-7xl mx-auto">{message}</div>}
+      {errorMessage && <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-6 max-w-7xl mx-auto">{errorMessage}</div>}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8"> 
         
-        {/* Card 1: Personal Information */}
         <div className="bg-white p-8 rounded-2xl shadow-lg">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">Personal Information</h2>
           <form onSubmit={handleUpdateProfile} className="space-y-6">
@@ -122,22 +119,23 @@ function ProfilePage() {
                 <input 
                   type="email" id="email"
                   value={email}
-                  disabled // Email cannot be changed
+                  disabled 
+                  readOnly
                   className="w-full p-3 pl-12 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
                 />
               </div>
             </div>
             <button 
               type="submit"
-              className="w-full bg-[#1E40AF] text-white py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors shadow-md flex items-center justify-center gap-2"
+              disabled={loadingProfile}
+              className="w-full bg-[#1E40AF] text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md flex items-center justify-center gap-2 disabled:bg-gray-400"
             >
               <FiSave />
-              Save Changes
+              {loadingProfile ? 'Saving...' : 'Save Changes'}
             </button>
           </form>
         </div>
 
-        {/* Card 2: Change Password */}
         <div className="bg-white p-8 rounded-2xl shadow-lg">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">Change Password</h2>
           <form onSubmit={handleChangePassword} className="space-y-6">
@@ -182,9 +180,10 @@ function ProfilePage() {
             </div>
             <button 
               type="submit"
-              className="w-full bg-[#1E40AF] text-white py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors shadow-md"
+              disabled={loadingPassword}
+              className="w-full bg-[#1E40AF] text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md disabled:bg-gray-400"
             >
-              Change Password
+              {loadingPassword ? 'Saving...' : 'Change Password'}
             </button>
           </form>
         </div>

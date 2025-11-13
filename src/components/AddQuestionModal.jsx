@@ -156,7 +156,7 @@ function AddQuestionModal({ isOpen, onClose, quizId, onQuestionAdded }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-[#E2F1F9] bg-opacity-50 z-40 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-lg max-w-2xl w-full z-50 relative p-8">
         <button 
           onClick={handleClose}

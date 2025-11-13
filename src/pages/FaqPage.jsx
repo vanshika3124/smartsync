@@ -110,7 +110,7 @@ function FaqPage() {
   return (
     // Navbar aur Footer aapki App.jsx file se aa rahe hain
     // Yeh sirf page ka content hai
-    <div className="w-full bg-[#F0F5FF] py-16 px-6">
+    <div className="w-full bg-[#E2F1F9] py-16 px-6">
       <div className="max-w-4xl mx-auto text-center">
         
         {/* Title */}

@@ -124,7 +124,7 @@ function AddQuestions() {
       setError(err.response?.data?.message || "Error: Failed to add question.");
     } finally {
       setLoading(false);
-    }
+    }       
   };
 
   const handleDone = async () => {
@@ -179,12 +179,11 @@ function AddQuestions() {
   };
 
   return (
-    <main className="flex-1 p-8 md:p-12 bg-blue-50 min-h-screen">
+    <main className="flex-1 p-8 md:p-12 bg-[#E2F1F9] min-h-screen">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Add Questions</h1>
-            <p className="text-lg text-gray-600">Quiz ID: {quizId}</p>
           </div>
         </div>
         
@@ -310,7 +309,7 @@ function AddQuestions() {
           <button 
             type="submit"
             disabled={loading || uploading}
-            className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md disabled:bg-gray-400"
+           className="w-full mt-6 bg-[#1E40AF] text-white py-3 rounded-full ... flex items-center justify-center gap-2"
           >
             <FiPlus />
             {loading ? 'Saving...' : (uploading ? 'Uploading Image...' : 'Add Question')}
@@ -323,7 +322,7 @@ function AddQuestions() {
         <button 
           onClick={handleDone}
           disabled={loading || uploading}
-          className="w-1/2 mx-auto mt-8 block bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md"
+          className="w-1/2 mx-auto mt-8 block bg-[#1E40AF] text-white py-3 rounded-full font-semibold hover:bg-blue-900 transition-colors shadow-md"
         >
           {loading ? 'Saving...' : 'Done'}
         </button>
